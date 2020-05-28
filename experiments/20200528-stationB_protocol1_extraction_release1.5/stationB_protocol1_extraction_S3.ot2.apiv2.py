@@ -393,7 +393,7 @@ def wash_reuse(wash_sets,dests,waste,magdeck,pip,tiprack,tipreuse):
             pip.transfer(200, asp_loc, waste, new_tip='never', air_gap=20)
             pip.flow_rate.aspirate = aspire_default_speed
             pip.blow_out(waste)
-            if  wash_num != 2:
+            if  wash_num != 3:
                 pip.return_tip(home_after=False)
             else:
                 pip.drop_tip(home_after=False)
