@@ -4,8 +4,8 @@ from opentrons.drivers.rpi_drivers import gpio
 import time
 import math
 import os
-import subprocess
 import sys
+import subprocess
 import json
 from datetime import datetime
 custom_modules_path = "/var/user-packages/usr/lib/python3.7/site-packages"
