@@ -9,8 +9,6 @@ import sys
 import json
 from datetime import datetime
 custom_modules_path = "/var/user-packages/usr/lib/python3.7/site-packages"
-#sys.path.pop()
-#sys.path.pop()
 if custom_modules_path not in sys.path:
     sys.path.append(custom_modules_path)
 import requests
