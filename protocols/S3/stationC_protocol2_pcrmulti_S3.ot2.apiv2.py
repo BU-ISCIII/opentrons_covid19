@@ -11,7 +11,7 @@ from datetime import datetime
 
 # Metadata
 metadata = {
-    'protocolName': 'S3 Station C Protocol 1 pcr Version 1',
+    'protocolName': 'S3 Station C Protocol 2 pcrmulti Version 1',
     'author': 'Nick <protocols@opentrons.com>, Sara <smonzon@isciii.es>, Miguel <mjuliam@isciii.es>',
     'source': 'Custom Protocol Request',
     'apiLevel': '2.3'
@@ -31,7 +31,7 @@ RESET_TIPCOUNT = False
 PROTOCOL_ID = "0000-AA"
 
 # End Parameters to adapt the protocol
-ACTION = "StationC-protocol1-pcr"
+ACTION = "StationC-protocol2-pcrmulti"
 
 ## global vars
 ## initialize robot object
