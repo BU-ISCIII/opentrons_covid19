@@ -557,9 +557,9 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
         ## bead dests depending on number of samples
         bead_dests = bead_buffer[:math.ceil(num_cols/4)]
         dispense_beads(7,bead_dests,mag_samples_m,m300,tips300)
-    # else:
+    else:
         # Mix bead
-        # mix_beads(7, mag_samples_m,m300,tips300)
+        mix_beads(7, mag_samples_m,m300,tips300)
 
     # incubate off the magnet
     # robot.delay(minutes=10, msg='Incubating off magnet for 10 minutes.')
@@ -568,7 +568,7 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
     magdeck.engage(height_from_base=MAGNET_HEIGHT)
     # robot.delay(minutes=7, msg='Incubating on magnet for 7 minutes.')
 
-    # remove supernatant with P1000
+    remove supernatant with P1000
     # remove_supernatant(mag_samples_s,waste,p1000,tips1000)
 
     # empty trash
