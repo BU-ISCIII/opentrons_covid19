@@ -459,9 +459,6 @@ def run(ctx: protocol_api.ProtocolContext):
     global robot
     robot = ctx
 
-    text = str(sys.path)
-    robot.comment(text)
-
     # check if tipcount is being reset
     if RESET_TIPCOUNT:
         reset_tipcount()
