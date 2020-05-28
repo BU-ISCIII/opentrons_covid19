@@ -31,7 +31,7 @@ RESET_TIPCOUNT = False
 PROTOCOL_ID = "0000-AA"
 
 # End Parameters to adapt the protocol
-ACTION = "StationC-protocol1-pcr"
+ACTION = "StationC-protocol2-pcrmulti"
 
 ## global vars
 ## initialize robot object
