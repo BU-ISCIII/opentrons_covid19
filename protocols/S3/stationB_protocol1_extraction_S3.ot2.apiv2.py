@@ -349,6 +349,7 @@ def remove_supernatant(sources,waste,pip,tiprack):
         drop(pip)
 
 def wash_reuse(wash_sets,dests,waste,magdeck,pip,tiprack,tipreuse):
+    wash_num = 0
     for wash_set in wash_sets:
         # transfer wash
         pick_up(pip,tiprack)
@@ -361,22 +362,29 @@ def wash_reuse(wash_sets,dests,waste,magdeck,pip,tiprack,tipreuse):
         # mix beads with wash
         tips_loc = 0
         for i, m in enumerate(dests):
-            if tips_loc == 0:
-                if  wash_set != 0:
+
+            if  wash_num != 0:
+                if tips_loc == 0:
                     drop(pip)
-                    pip.pick_up_tip(tipreuse[0].rows()[0][tips_loc])
+                pip.pick_up_tip(tipreuse[0].rows()[0][tips_loc])
             else:
-                 pip.pick_up_tip(tipreuse[0].rows()[0][tips_loc])
+                if tips_loc != 0:
+                    pick_up(pip,tiprack)
 
             dispense_default_speed = pip.flow_rate.dispense
             pip.flow_rate.dispense = 1500
             pip.mix(7, 200, m.bottom(2))
             pip.flow_rate.dispense = dispense_default_speed
-            pip.return_tip(home_after=False)
+            if  wash_num != 0:
+                pip.return_tip(home_after=False)
+            else:
+                pip.drop_tip(tipreuse[0].rows()[0][tips_loc], home_after=False)
             tips_loc += 1
 
         magdeck.engage(height_from_base=MAGNET_HEIGHT)
         robot.delay(seconds=75, msg='Incubating on magnet for 75 seconds.')
+
+        wash_num += 1
 
         # remove supernatant
         tips_loc = 0
@@ -388,7 +396,10 @@ def wash_reuse(wash_sets,dests,waste,magdeck,pip,tiprack,tipreuse):
             pip.transfer(200, asp_loc, waste, new_tip='never', air_gap=20)
             pip.flow_rate.aspirate = aspire_default_speed
             pip.blow_out(waste)
-            pip.return_tip(home_after=False)
+            if  wash_num != 3:
+                pip.return_tip(home_after=False)
+            else:
+                pip.drop_tip(home_after=False)
             tips_loc += 1
 
 def wash(wash_sets,dests,waste,magdeck,pip,tiprack):
@@ -500,7 +511,7 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
     following:\nnest 12 reservoir plate')
 
     reagent_res = robot.load_labware(
-        REAGENT_LW_DICT[REAGENT_LABWARE], '7', 'reagent reservoir')
+        REAGENT_LW_DICT[REAGENT_LABWARE], '4', 'reagent reservoir')
 
     ## TIPS
     # using standard tip definition despite actually using filter tips
@@ -508,17 +519,17 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
     tips300 = [
         robot.load_labware(
             'opentrons_96_tiprack_300ul', slot, '200µl filter tiprack')
-        for slot in ['2', '3', '4', '5', '6']
+        for slot in ['2', '3', '5', '6', '9']
     ]
     tipsreuse = [
         robot.load_labware(
             'opentrons_96_tiprack_300ul', slot, '200µl filter tiprack')
-        for slot in ['8']
+        for slot in ['7']
     ]
     tips1000 = [
         robot.load_labware('opentrons_96_filtertiprack_1000ul', slot,
                          '1000µl filter tiprack')
-        for slot in ['9']
+        for slot in ['8']
     ]
 
     # reagents and samples
@@ -545,9 +556,6 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
     p1000.flow_rate.aspirate = 100
     p1000.flow_rate.dispense = 1000
     p1000.flow_rate.blow_out = 1000
-
-    # start with magdeck off
-    magdeck.disengage()
 
     if(DISPENSE_BEADS):
         # premix, transfer, and mix magnetic beads with sample
