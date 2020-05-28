@@ -5,10 +5,15 @@ import time
 import math
 import os
 import subprocess
-import requests
+import sys
 import json
 from datetime import datetime
-
+custom_modules_path = "/var/user-packages/usr/lib/python3.7/site-packages"
+#sys.path.pop()
+#sys.path.pop()
+if custom_modules_path not in sys.path:
+    sys.path.append(custom_modules_path)
+import requests
 
 # metadata
 metadata = {
@@ -179,16 +184,18 @@ def run_info(start,end,parameters = dict()):
     headers = {'Content-type': 'application/json'}
     url_https = 'https://' + URL
     url_http = 'http://' + URL
-    try:
-        r = requests.post(url_https, data=json.dumps(info), headers=headers)
-    except:
-        try:
-            r = requests.post(url_http, data=json.dumps(info), headers=headers)
-        except:
-            write_to_error_log(info, 'Server communication error')
-            return
-    if r.status_code > 201 :
-        write_to_error_log(info, str(r.status_code))
+    # try:
+    #     r = requests.post(url_https, data=json.dumps(info), headers=headers)
+    # except:
+    #     try:
+    #         r = requests.post(url_http, data=json.dumps(info), headers=headers)
+    #     except:
+    #         write_to_error_log(info, 'Server communication error')
+    #         return
+    #if r.status_code > 201 :
+    #    write_to_error_log(info, str(r.status_code))
+    write_to_error_log(info, 'Server communication error')
+    return
 
 def check_door():
     return gpio.read_window_switches()
@@ -444,6 +451,9 @@ def elute_samples(sources,dests,buffer,magdeck,pip,tipracks):
 def run(ctx: protocol_api.ProtocolContext):
     global robot
     robot = ctx
+
+    text = str(sys.path)
+    robot.comment(text)
 
     # check if tipcount is being reset
     if RESET_TIPCOUNT:
