@@ -105,7 +105,7 @@ elif LANGUAGE_DICT[LANGUAGE] == 'esp':
 
 def write_to_error_log (info, reason):
     date = datetime.now().strftime("%Y_%m_%d")
-    folder_date = os.path.join('/data', date)
+    folder_date = os.path.join('/data/logs', date)
     time_now = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     json_file = time_now + '.json'
     folder_file_name = os.path.join(folder_date, json_file)
