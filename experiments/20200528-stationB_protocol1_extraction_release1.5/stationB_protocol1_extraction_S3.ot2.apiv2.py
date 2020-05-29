@@ -4,8 +4,8 @@ from opentrons.drivers.rpi_drivers import gpio
 import time
 import math
 import os
-import sys
 import subprocess
+import sys
 import json
 from datetime import datetime
 custom_modules_path = "/var/user-packages/usr/lib/python3.7/site-packages"
@@ -38,7 +38,7 @@ REAGENT SETUP:
 # Warning writing any Parameters below this line.
 # It will be deleted if opentronsWeb is used.
 
-NUM_SAMPLES = 96
+NUM_SAMPLES = 24
 REAGENT_LABWARE = 'nest 12 reservoir plate'
 MAGPLATE_LABWARE = 'nest deep generic well plate'
 WASTE_LABWARE = 'nest 1 reservoir plate'
@@ -46,7 +46,7 @@ ELUTION_LABWARE = 'opentrons aluminum nest plate'
 DISPENSE_BEADS = False
 REUSE_TIPS = True
 LANGUAGE = 'esp'
-RESET_TIPCOUNT = False
+RESET_TIPCOUNT = True
 PROTOCOL_ID = "0000-AA"
 URL = 'localhost'
 # End Parameters to adapt the protocol
@@ -144,7 +144,7 @@ elif LANGUAGE_DICT[LANGUAGE] == 'esp':
 
 def write_to_error_log (info, reason):
     date = datetime.now().strftime("%Y_%m_%d")
-    folder_date = os.path.join('/data/logs', date)
+    folder_date = os.path.join('/data', date)
     time_now = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     json_file = time_now + '.json'
     folder_file_name = os.path.join(folder_date, json_file)
@@ -378,7 +378,7 @@ def wash_reuse(wash_sets,dests,waste,magdeck,pip,tiprack,tipreuse):
             tips_loc += 1
 
         magdeck.engage(height_from_base=MAGNET_HEIGHT)
-        robot.delay(seconds=75, msg='Incubating on magnet for 75 seconds.')
+        # robot.delay(seconds=75, msg='Incubating on magnet for 75 seconds.')
 
         wash_num += 1
 
@@ -414,7 +414,7 @@ def wash(wash_sets,dests,waste,magdeck,pip,tiprack):
             pip.flow_rate.dispense = dispense_default_speed
 
             magdeck.engage(height_from_base=MAGNET_HEIGHT)
-            robot.delay(seconds=75, msg='Incubating on magnet for 75 seconds.')
+            # robot.delay(seconds=75, msg='Incubating on magnet for 75 seconds.')
 
             # remove supernatant
             aspire_default_speed = pip.flow_rate.aspirate
@@ -438,9 +438,9 @@ def elute_samples(sources,dests,buffer,magdeck,pip,tipracks):
         drop(pip)
 
     ## Incubation steps
-    robot.delay(minutes=5, msg='Incubating off magnet for 5 minutes.')
+    # robot.delay(minutes=5, msg='Incubating off magnet for 5 minutes.')
     magdeck.engage(height_from_base=MAGNET_HEIGHT)
-    robot.delay(seconds=120, msg='Incubating on magnet for 120 seconds.')
+    # robot.delay(seconds=120, msg='Incubating on magnet for 120 seconds.')
 
     aspire_default_speed = pip.flow_rate.aspirate
     pip.flow_rate.aspirate = 50
@@ -458,6 +458,9 @@ def elute_samples(sources,dests,buffer,magdeck,pip,tipracks):
 def run(ctx: protocol_api.ProtocolContext):
     global robot
     robot = ctx
+
+    text = str(sys.path)
+    robot.comment(text)
 
     # check if tipcount is being reset
     if RESET_TIPCOUNT:
@@ -560,23 +563,17 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
         mix_beads(7, mag_samples_m,m300,tips300)
 
     # incubate off the magnet
-    robot.delay(minutes=10, msg='Incubating off magnet for 10 minutes.')
+    # robot.delay(minutes=10, msg='Incubating off magnet for 10 minutes.')
 
     ## First incubate on magnet.
     magdeck.engage(height_from_base=MAGNET_HEIGHT)
-    robot.delay(minutes=7, msg='Incubating on magnet for 7 minutes.')
-
-    # empty trash
-    if NUM_SAMPLES > 48:
-        voice_notification('empty_trash')
-        robot.pause(f"Please, empty trash")
-        confirm_door_is_closed()
+    # robot.delay(minutes=7, msg='Incubating on magnet for 7 minutes.')
 
     # remove supernatant with P1000
     remove_supernatant(mag_samples_s,waste,p1000,tips1000)
 
     # empty trash
-    if NUM_SAMPLES > 48:
+    if NUM_SAMPLES > 24:
         voice_notification('empty_trash')
         robot.pause(f"Please, empty trash")
         confirm_door_is_closed()
@@ -586,6 +583,12 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
         wash_reuse(wash_sets,mag_samples_m,waste,magdeck,m300,tips300,tipsreuse)
     else:
         wash(wash_sets,mag_samples_m,waste,magdeck,m300,tips300)
+
+    # empty trash
+    if NUM_SAMPLES > 72:
+        voice_notification('empty_trash')
+        robot.pause(f"Please, empty trash")
+        confirm_door_is_closed()
 
     # elute samples
     magdeck.disengage()
