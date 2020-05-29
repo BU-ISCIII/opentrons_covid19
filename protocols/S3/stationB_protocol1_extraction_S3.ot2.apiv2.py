@@ -566,11 +566,17 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
     magdeck.engage(height_from_base=MAGNET_HEIGHT)
     robot.delay(minutes=7, msg='Incubating on magnet for 7 minutes.')
 
+    # empty trash
+    if NUM_SAMPLES > 48:
+        voice_notification('empty_trash')
+        robot.pause(f"Please, empty trash")
+        confirm_door_is_closed()
+
     # remove supernatant with P1000
     remove_supernatant(mag_samples_s,waste,p1000,tips1000)
 
     # empty trash
-    if NUM_SAMPLES > 24:
+    if NUM_SAMPLES > 48:
         voice_notification('empty_trash')
         robot.pause(f"Please, empty trash")
         confirm_door_is_closed()
@@ -580,12 +586,6 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
         wash_reuse(wash_sets,mag_samples_m,waste,magdeck,m300,tips300,tipsreuse)
     else:
         wash(wash_sets,mag_samples_m,waste,magdeck,m300,tips300)
-
-    # empty trash
-    if NUM_SAMPLES > 72:
-        voice_notification('empty_trash')
-        robot.pause(f"Please, empty trash")
-        confirm_door_is_closed()
 
     # elute samples
     magdeck.disengage()
