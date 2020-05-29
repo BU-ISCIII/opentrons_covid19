@@ -34,6 +34,7 @@ VOLUME_ELUTION = 7
 LANGUAGE = 'esp'
 RESET_TIPCOUNT = False
 PROTOCOL_ID = "0000-AA"
+URL = "localhost"
 
 # End Parameters to adapt the protocol
 ACTION = "StationC-protocol2-pcrmulti"
