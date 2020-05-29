@@ -590,8 +590,9 @@ def run(ctx: protocol_api.ProtocolContext):
     if TRANSFER_MASTERMIX:
         transfer_mastermix(mm_tube, dests, p300, p20, tips300, tips20)
         if TRANSFER_SAMPLES:
+            robot.comment(f"Please, check that all wells have received the right ammount of mastermix")
             if not robot.is_simulating():
-                robot.pause(f"Please, check that all wells have received the right ammount of mastermix")
+                robot.pause()
 
     # transfer samples to corresponding locations
     if TRANSFER_SAMPLES:
