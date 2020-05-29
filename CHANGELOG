@@ -17,7 +17,6 @@ Protocol modification:
 
 Bug fixes:
 - Fixed unset variable in dispense_beads protocol 1 station B. 2ab984b
--
 
 ## Version 1.6
 Hotfix:
