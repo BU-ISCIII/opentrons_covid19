@@ -437,6 +437,7 @@ def wash(wash_sets,dests,waste,magdeck,pip,tiprack):
 
 def elute_samples_reuse(sources,dests,buffer,magdeck,pip,tipracks,tipreuse):
     ## dispense buffer
+    tips_loc = 0
     for i, m in enumerate(sources):
         pick_up(pip,tipracks)
         dispense_default_speed = pip.flow_rate.dispense
@@ -445,7 +446,8 @@ def elute_samples_reuse(sources,dests,buffer,magdeck,pip,tipracks,tipreuse):
             50, buffer.bottom(2), m.bottom(1), new_tip='never', air_gap=10)
         pip.mix(20, 200, m.bottom(1))
         pip.flow_rate.dispense = dispense_default_speed
-        drop(pip)
+        pip.drop_tip(tipreuse[0].rows()[0][tips_loc], home_after=False)
+        tips_loc += 1
 
     ## Incubation steps
     robot.delay(minutes=5, msg='Incubating off magnet for 5 minutes.')
@@ -455,14 +457,16 @@ def elute_samples_reuse(sources,dests,buffer,magdeck,pip,tipracks,tipreuse):
     aspire_default_speed = pip.flow_rate.aspirate
     pip.flow_rate.aspirate = 50
     ## Dispense elutes in pcr plate.
+    tips_loc = 0
     for i, (m, e) in enumerate(zip(sources, dests)):
         # tranfser and mix elution buffer with beads
         asp_loc = m.bottom(1.5)
-        pick_up(pip,tipracks)
+        pip.pick_up_tip(tipreuse[0].rows()[0][tips_loc])
         # transfer elution to new plate
         pip.transfer(50, asp_loc, e, new_tip='never', air_gap=10)
         pip.blow_out(e.top(-2))
         drop(pip)
+        tips_loc += 1
     pip.flow_rate.aspirate = aspire_default_speed
 
 def elute_samples(sources,dests,buffer,magdeck,pip,tipracks):
