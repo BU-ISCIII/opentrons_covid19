@@ -27,7 +27,7 @@ metadata = {
 # It will be deleted if opentronsWeb is used.
 
 NUM_SAMPLES = 96
-PCR_LABWARE = 'opentrons aluminum nest plate'
+PCR_LABWARE = 'opentrons aluminum biorad plate'
 MM_LABWARE = 'opentrons aluminum block'
 ELUTION_LABWARE = 'opentrons aluminum nest plate'
 VOLUME_ELUTION = 7
@@ -397,7 +397,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
     # tempdeck module
     tempdeck = robot.load_module('tempdeck', '10')
-    tempdeck.set_temperature(4)
+    # tempdeck.set_temperature(4)
 
     # check pcr plate
     if PCR_LABWARE not in PCR_LW_DICT:
