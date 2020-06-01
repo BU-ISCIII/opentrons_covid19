@@ -360,8 +360,10 @@ def wash_reuse(wash_sets,dests,waste,magdeck,pip,tiprack,tipreuse):
         for i, m in enumerate(dests):
             magdeck.disengage()
             wash_chan = wash_set[i//6]
-            pip.transfer(
-                200, wash_chan.bottom(2), m.top(), new_tip='never', air_gap=20)
+            dispense_default_speed = pip.flow_rate.dispense
+            pip.flow_rate.dispense = 200
+            pip.transfer(200, wash_chan.bottom(2), m.top(), new_tip='never', air_gap=20)
+            pip.flow_rate.dispense = dispense_default_speed
 
         # mix beads with wash
         tips_loc = 0
