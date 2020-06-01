@@ -369,13 +369,13 @@ def wash_reuse(wash_sets,dests,waste,magdeck,pip,tiprack,tipreuse):
         tips_loc = 0
         for i, m in enumerate(dests):
 
+            if tips_loc == 0:
+                drop(pip)
+
             if  wash_num != 0:
-                if tips_loc == 0:
-                    drop(pip)
                 pip.pick_up_tip(tipreuse[0].rows()[0][tips_loc])
             else:
-                if tips_loc != 0:
-                    pick_up(pip,tiprack)
+                pick_up(pip,tiprack)
 
             dispense_default_speed = pip.flow_rate.dispense
             pip.flow_rate.dispense = 1500
