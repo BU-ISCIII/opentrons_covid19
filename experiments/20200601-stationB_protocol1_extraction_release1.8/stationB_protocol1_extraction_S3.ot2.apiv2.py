@@ -561,7 +561,7 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
         tips300 = [
             robot.load_labware(
                 'opentrons_96_tiprack_300ul', slot, '200µl filter tiprack')
-            for slot in ['8', '5', '2', '3']
+            for slot in ['8', '6', '2', '3']
         ]
         tipsreuse = [
             robot.load_labware(
@@ -571,7 +571,7 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
         tips1000 = [
             robot.load_labware('opentrons_96_filtertiprack_1000ul', slot,
                              '1000µl filter tiprack')
-            for slot in ['6']
+            for slot in ['5']
         ]
     else:
         tips300 = [
