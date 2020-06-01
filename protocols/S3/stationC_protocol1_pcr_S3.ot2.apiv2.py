@@ -284,10 +284,14 @@ def retrieve_tip_info(pip,tipracks,file_path = '/data/C/tip_log.json'):
                     data = json.load(json_file)
                     if 'P1000' in str(pip):
                         tip_log['count'][pip] = data['tips1000']
-                    elif 'P300' in str(pip):
+                    elif 'P300' in str(pip) and 'Single-Channel' in str(pip):
                         tip_log['count'][pip] = data['tips300']
-                    elif 'P20' in str(pip):
+                    elif 'P300' in str(pip) and '8-Channel' in str(pip):
+                        tip_log['count'][pip] = data['tipsm300']
+                    elif 'P20' in str(pip) and 'Single-Channel' in str(pip):
                         tip_log['count'][pip] = data['tips20']
+                    elif 'P20' in str(pip) and '8-Channel' in str(pip):
+                        tip_log['count'][pip] = data['tipsm20']
 
         if "8-Channel" in str(pip):
             tip_log['tips'][pip] =  [tip for rack in tipracks for tip in rack.rows()[0]]
@@ -306,24 +310,17 @@ def save_tip_info(file_path = '/data/C/tip_log.json'):
         for pip in tip_log['count']:
             if "P1000" in str(pip):
                 data['tips1000'] = tip_log['count'][pip]
-            elif "P300" in str(pip):
+            elif 'P300' in str(pip) and 'Single-Channel' in str(pip):
                 data['tips300'] = tip_log['count'][pip]
-            elif "P20" in str(pip):
+            elif 'P300' in str(pip) and '8-Channel' in str(pip):
+                data['tipsm300'] = tip_log['count'][pip]
+            elif 'P20' in str(pip) and 'Single-Channel' in str(pip):
                 data['tips20'] = tip_log['count'][pip]
+            elif 'P20' in str(pip) and '8-Channel' in str(pip):
+                data['tipsm20'] = tip_log['count'][pip]
 
         with open(file_path, 'a+') as outfile:
             json.dump(data, outfile)
-
-def pick_up(pip,tiprack):
-    if tip_log['count'][pip] == tip_log['max'][pip]:
-        voice_notification('replace_tipracks')
-        robot.pause('Replace ' + str(pip.max_volume) + 'µl tipracks before \
-resuming.')
-        confirm_door_is_closed()
-        pip.reset_tipracks()
-        tip_log['count'][pip] = 0
-    pip.pick_up_tip(tip_log['tips'][pip][tip_log['count'][pip]])
-    tip_log['count'][pip] += 1
 
 def drop(pip):
     global switch
