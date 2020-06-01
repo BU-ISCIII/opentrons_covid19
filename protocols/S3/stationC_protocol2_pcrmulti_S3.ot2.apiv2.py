@@ -27,7 +27,7 @@ metadata = {
 # It will be deleted if opentronsWeb is used.
 
 NUM_SAMPLES = 96
-PCR_LABWARE = 'opentrons aluminum nest plate'
+PCR_LABWARE = 'opentrons aluminum biorad plate'
 MM_LABWARE = 'opentrons aluminum block'
 ELUTION_LABWARE = 'opentrons aluminum nest plate'
 VOLUME_ELUTION = 7
