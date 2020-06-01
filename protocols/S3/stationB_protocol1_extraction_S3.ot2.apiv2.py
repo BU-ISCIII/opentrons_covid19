@@ -547,12 +547,8 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
         raise Exception('Invalid REAGENT_LABWARE. Must be one of the \
     following:\nnest 12 reservoir plate')
 
-    if REUSE_TIPS == True:
-        reagent_res = robot.load_labware(
-            REAGENT_LW_DICT[REAGENT_LABWARE], '4', 'reagent reservoir')
-    else:
-        reagent_res = robot.load_labware(
-            REAGENT_LW_DICT[REAGENT_LABWARE], '7', 'reagent reservoir')
+    reagent_res = robot.load_labware(
+        REAGENT_LW_DICT[REAGENT_LABWARE], '7', 'reagent reservoir')
 
     ## TIPS
     # using standard tip definition despite actually using filter tips
@@ -561,12 +557,12 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
         tips300 = [
             robot.load_labware(
                 'opentrons_96_tiprack_300ul', slot, '200µl filter tiprack')
-            for slot in ['8', '5', '2', '3']
+            for slot in ['4', '5', '2', '3']
         ]
         tipsreuse = [
             robot.load_labware(
                 'opentrons_96_tiprack_300ul', slot, '200µl filter tiprack')
-            for slot in ['7']
+            for slot in ['8']
         ]
         tips1000 = [
             robot.load_labware('opentrons_96_filtertiprack_1000ul', slot,
