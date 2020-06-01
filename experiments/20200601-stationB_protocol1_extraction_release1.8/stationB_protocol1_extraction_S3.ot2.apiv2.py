@@ -38,7 +38,7 @@ REAGENT SETUP:
 # Warning writing any Parameters below this line.
 # It will be deleted if opentronsWeb is used.
 
-NUM_SAMPLES = 96
+NUM_SAMPLES = 48
 REAGENT_LABWARE = 'nest 12 reservoir plate'
 MAGPLATE_LABWARE = 'nest deep generic well plate'
 WASTE_LABWARE = 'nest 1 reservoir plate'
@@ -633,7 +633,7 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
         confirm_door_is_closed()
 
     # remove supernatant with P1000
-    remove_supernatant(mag_samples_s,waste,p1000,tips1000)
+    # remove_supernatant(mag_samples_s,waste,p1000,tips1000)
 
     # empty trash
     if NUM_SAMPLES > 48:
