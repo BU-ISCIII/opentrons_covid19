@@ -322,6 +322,27 @@ def save_tip_info(file_path = '/data/C/tip_log.json'):
         with open(file_path, 'a+') as outfile:
             json.dump(data, outfile)
 
+def pick_up(pip,tiprack):
+    if tip_log['count'][pip] == tip_log['max'][pip]:
+        voice_notification('replace_tipracks')
+        robot.pause('Replace ' + str(pip.max_volume) + 'µl tipracks before \
+resuming.')
+        confirm_door_is_closed()
+        pip.reset_tipracks()
+        tip_log['count'][pip] = 0
+    pip.pick_up_tip(tip_log['tips'][pip][tip_log['count'][pip]])
+    tip_log['count'][pip] += 1
+
+def drop(pip):
+    global switch
+    if "8-Channel" not in str(pip):
+        side = 1 if switch else -1
+        drop_loc = robot.loaded_labwares[12].wells()[0].top().move(Point(x=side*20))
+        pip.drop_tip(drop_loc,home_after=False)
+        switch = not switch
+    else:
+        drop_loc = robot.loaded_labwares[12].wells()[0].top().move(Point(x=20))
+        pip.drop_tip(drop_loc,home_after=False)
 def drop(pip):
     global switch
     if "8-Channel" not in str(pip):
