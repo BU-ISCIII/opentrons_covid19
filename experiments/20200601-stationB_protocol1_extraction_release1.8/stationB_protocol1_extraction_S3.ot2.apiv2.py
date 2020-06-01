@@ -38,7 +38,7 @@ REAGENT SETUP:
 # Warning writing any Parameters below this line.
 # It will be deleted if opentronsWeb is used.
 
-NUM_SAMPLES = 24
+NUM_SAMPLES = 96
 REAGENT_LABWARE = 'nest 12 reservoir plate'
 MAGPLATE_LABWARE = 'nest deep generic well plate'
 WASTE_LABWARE = 'nest 1 reservoir plate'
@@ -46,7 +46,7 @@ ELUTION_LABWARE = 'opentrons aluminum nest plate'
 DISPENSE_BEADS = False
 REUSE_TIPS = True
 LANGUAGE = 'esp'
-RESET_TIPCOUNT = False
+RESET_TIPCOUNT = True
 PROTOCOL_ID = "0000-AA"
 URL = 'localhost'
 # End Parameters to adapt the protocol
