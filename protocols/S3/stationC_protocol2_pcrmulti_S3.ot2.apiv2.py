@@ -437,7 +437,7 @@ def run(ctx: protocol_api.ProtocolContext):
     sources_m, sources_s, dests_m, dests_s = get_source_dest_coordinates(source_racks, pcr_plate)
 
     # transfer samples to corresponding locations
-    if NUM_SAMPLES > 8:
+    if NUM_SAMPLES >= 8:
         transfer_samples(sources_m,dests_m,m20,tipsm20)
     transfer_samples(sources_s, dests_s, p20,tips20)
 
