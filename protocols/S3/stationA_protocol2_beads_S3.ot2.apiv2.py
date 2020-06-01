@@ -209,10 +209,14 @@ def retrieve_tip_info(pip,tipracks,file_path = '/data/A/tip_log.json'):
                     data = json.load(json_file)
                     if 'P1000' in str(pip):
                         tip_log['count'][pip] = data['tips1000']
-                    elif 'P300' in str(pip):
+                    elif 'P300' in str(pip) and 'Single-Channel' in str(pip):
                         tip_log['count'][pip] = data['tips300']
-                    elif 'P20' in str(pip):
+                    elif 'P300' in str(pip) and '8-Channel' in str(pip):
+                        tip_log['count'][pip] = data['tipsm300']
+                    elif 'P20' in str(pip) and 'Single-Channel' in str(pip):
                         tip_log['count'][pip] = data['tips20']
+                    elif 'P20' in str(pip) and '8-Channel' in str(pip):
+                        tip_log['count'][pip] = data['tipsm20']
 
         if "8-Channel" in str(pip):
             tip_log['tips'][pip] =  [tip for rack in tipracks for tip in rack.rows()[0]]
@@ -231,10 +235,14 @@ def save_tip_info(file_path = '/data/A/tip_log.json'):
         for pip in tip_log['count']:
             if "P1000" in str(pip):
                 data['tips1000'] = tip_log['count'][pip]
-            elif "P300" in str(pip):
+            elif 'P300' in str(pip) and 'Single-Channel' in str(pip):
                 data['tips300'] = tip_log['count'][pip]
-            elif "P20" in str(pip):
+            elif 'P300' in str(pip) and '8-Channel' in str(pip):
+                data['tipsm300'] = tip_log['count'][pip]
+            elif 'P20' in str(pip) and 'Single-Channel' in str(pip):
                 data['tips20'] = tip_log['count'][pip]
+            elif 'P20' in str(pip) and '8-Channel' in str(pip):
+                data['tipsm20'] = tip_log['count'][pip]
 
         with open(file_path, 'a+') as outfile:
             json.dump(data, outfile)
