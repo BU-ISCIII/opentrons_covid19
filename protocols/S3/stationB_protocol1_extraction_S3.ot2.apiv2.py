@@ -547,27 +547,43 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
         raise Exception('Invalid REAGENT_LABWARE. Must be one of the \
     following:\nnest 12 reservoir plate')
 
-    reagent_res = robot.load_labware(
-        REAGENT_LW_DICT[REAGENT_LABWARE], '4', 'reagent reservoir')
+    if REUSE_TIPS == True:
+        reagent_res = robot.load_labware(
+            REAGENT_LW_DICT[REAGENT_LABWARE], '4', 'reagent reservoir')
+    else:
+        reagent_res = robot.load_labware(
+            REAGENT_LW_DICT[REAGENT_LABWARE], '7', 'reagent reservoir')
 
     ## TIPS
     # using standard tip definition despite actually using filter tips
     # so that the tips can accommodate ~220µl per transfer for efficiency
-    tips300 = [
+    if REUSE_TIPS == True:
+        tips300 = [
+            robot.load_labware(
+                'opentrons_96_tiprack_300ul', slot, '200µl filter tiprack')
+            for slot in ['8', '5', '2', '3']
+        ]
+        tipsreuse = [
+            robot.load_labware(
+                'opentrons_96_tiprack_300ul', slot, '200µl filter tiprack')
+            for slot in ['7']
+        ]
+        tips1000 = [
+            robot.load_labware('opentrons_96_filtertiprack_1000ul', slot,
+                             '1000µl filter tiprack')
+            for slot in ['6']
+        ]
+    else:
+        tips300 = [
         robot.load_labware(
             'opentrons_96_tiprack_300ul', slot, '200µl filter tiprack')
-        for slot in ['8', '5', '2', '3']
-    ]
-    tipsreuse = [
-        robot.load_labware(
-            'opentrons_96_tiprack_300ul', slot, '200µl filter tiprack')
-        for slot in ['7']
-    ]
-    tips1000 = [
-        robot.load_labware('opentrons_96_filtertiprack_1000ul', slot,
-                         '1000µl filter tiprack')
-        for slot in ['6']
-    ]
+            for slot in ['2', '3', '5', '6', '9','4']
+        ]
+        tips1000 = [
+            robot.load_labware('opentrons_96_filtertiprack_1000ul', slot,
+                             '1000µl filter tiprack')
+            for slot in ['8']
+        ]
 
     # reagents and samples
     num_cols = math.ceil(NUM_SAMPLES/8)
