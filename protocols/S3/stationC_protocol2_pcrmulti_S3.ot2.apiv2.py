@@ -13,10 +13,11 @@ if custom_modules_path not in sys.path:
     sys.path.append(custom_modules_path)
 import requests
 
+
 # Metadata
 metadata = {
-    'protocolName': 'S3 Station A Protocol 1 buffer Version 1',
-    'author': 'Sara <smonzon@isciii.es>, Miguel <mjuliam@isciii.es>',
+    'protocolName': 'S3 Station C Protocol 2 pcrmulti Version 1',
+    'author': 'Nick <protocols@opentrons.com>, Sara <smonzon@isciii.es>, Miguel <mjuliam@isciii.es>',
     'source': 'Custom Protocol Request',
     'apiLevel': '2.3'
 }
@@ -26,17 +27,17 @@ metadata = {
 # It will be deleted if opentronsWeb is used.
 
 NUM_SAMPLES = 96
-BUFFER_LABWARE = 'opentrons plastic 30ml tubes'
-DESTINATION_LABWARE = 'opentrons plastic 2ml tubes'
-DEST_TUBE = '2ml tubes'
-VOLUME_BUFFER = 300
+PCR_LABWARE = 'opentrons aluminum biorad plate'
+MM_LABWARE = 'opentrons aluminum block'
+ELUTION_LABWARE = 'opentrons aluminum nest plate'
+VOLUME_ELUTION = 7
 LANGUAGE = 'esp'
 RESET_TIPCOUNT = False
 PROTOCOL_ID = "0000-AA"
-URL = 'localhost'
-# End Parameters to adapt the protocol
-ACTION = "StationA-protocol1-buffer"
+URL = "localhost"
 
+# End Parameters to adapt the protocol
+ACTION = "StationC-protocol2-pcrmulti"
 
 ## global vars
 ## initialize robot object
@@ -52,31 +53,62 @@ tip_log['max'] = {}
 """
 NUM_SAMPLES is the number of samples, must be an integer number
 
-BUFFER_LABWARE must be one of the following:
-    opentrons plastic 50ml tubes
-    opentrons plastic 30ml tubes
+MM_LABWARE must be one of the following:
+    opentrons plastic block
+    pentrons aluminum block
+    covidwarriors aluminum block
 
-DESTINATION_LABWARE must be one of the following:
+PCR_LABWARE must be one of the following:
+    opentrons aluminum biorad plate
+    opentrons aluminum nest plate
+    opentrons aluminum strip short
+    covidwarriors aluminum biorad plate
+    covidwarriors aluminum biorad strip short
+
+ELUTION_LABWARE must be one of the following:
     opentrons plastic 2ml tubes
+    opentrons plastic 1.5ml tubes
+    opentrons aluminum 2ml tubes
+    opentrons aluminum 1.5ml tubes
+    covidwarriors aluminum 2ml tubes
+    covidwarriors aluminum 1.5ml tubes
+    opentrons aluminum biorad plate
+    opentrons aluminum nest plate
+    covidwarriors aluminum biorad plate
+    opentrons aluminum strip alpha
+    opentrons aluminum strip short
+    covidwarriors aluminum biorad strip alpha
+    covidwarriors aluminum biorad strip short
 
-DEST_TUBE
-    2m tubes
 """
 
-
 # Constants
-BUFFER_LW_DICT = {
-    'opentrons plastic 50ml tubes': 'opentrons_6_tuberack_falcon_50ml_conical',
-    'opentrons plastic 30ml tubes': 'opentrons_6_tuberack_generic_30ml_conical'
+MM_LW_DICT = {
+    'opentrons plastic block': 'opentrons_24_tuberack_generic_2ml_screwcap',
+    'opentrons aluminum block': 'opentrons_24_aluminumblock_generic_2ml_screwcap',
+    'covidwarriors aluminum block': 'covidwarriors_aluminumblock_24_screwcap_2000ul'
 }
 
-DESTINATION_LW_DICT = {
-    'opentrons plastic 2ml tubes': 'opentrons_24_tuberack_generic_2ml_screwcap',
+PCR_LW_DICT = {
+    'opentrons aluminum biorad plate': 'opentrons_96_aluminumblock_biorad_wellplate_200ul',
+    'opentrons aluminum nest plate': 'opentrons_96_aluminumblock_nest_wellplate_100ul',
+    'opentrons aluminum strip short': 'opentrons_aluminumblock_96_pcrstrips_100ul',
+    'covidwarriors aluminum biorad plate': 'covidwarriors_aluminumblock_96_bioradwellplate_200ul',
+    'covidwarriors aluminum biorad strip short': 'covidwarriors_aluminumblock_96_bioradwellplate_pcrstrips_100ul'
 }
 
-DESTUBE_LW_DICT = {
-    # Radius of each possible tube
-    '2ml tubes': 4
+EL_LW_DICT = {
+    # PCR plate
+    'opentrons aluminum biorad plate': 'opentrons_96_aluminumblock_biorad_wellplate_200ul',
+    'opentrons aluminum nest plate': 'opentrons_96_aluminumblock_nest_wellplate_100ul',
+    'covidwarriors aluminum biorad plate': 'covidwarriors_aluminumblock_96_bioradwellplate_200ul',
+    # Strips
+    #'large strips': 'opentrons_96_aluminumblock_generic_pcr_strip_200ul',
+    #'short strips': 'opentrons_96_aluminumblock_generic_pcr_strip_200ul',
+    'opentrons aluminum strip alpha': 'opentrons_aluminumblock_96_pcrstripsalpha_200ul',
+    'opentrons aluminum strip short': 'opentrons_aluminumblock_96_pcrstrips_100ul',
+    'covidwarriors aluminum biorad strip alpha': 'covidwarriors_aluminumblock_96_bioradwellplate_pcrstripsalpha_200ul',
+    'covidwarriors aluminum biorad strip short': 'covidwarriors_aluminumblock_96_bioradwellplate_pcrstrips_100ul'
 }
 
 LANGUAGE_DICT = {
@@ -101,6 +133,7 @@ elif LANGUAGE_DICT[LANGUAGE] == 'esp':
         'empty_trash': './data/sounds/empty_trash_esp.mp3'
     }
 
+
 # Function definitions
 
 def write_to_error_log (info, reason):
@@ -116,16 +149,14 @@ def write_to_error_log (info, reason):
         except:
             return
     try:
-        # Create a new file for dumping json data
         with open (folder_file_name , 'w') as fh:
             json.dump(info, fh, indent=4)
-        # Append status reason code to the log
         with open(folder_error_log, 'a') as fh:
             fh.write( time_now +  '  Unable to accept the requests get error : '+ reason + '\n')
     except:
         return
 
-def run_info(start, end, parameters = dict()):
+def run_info(start,end,parameters = dict()):
     info = {}
     hostname = subprocess.run(
         ['hostname'],
@@ -153,7 +184,6 @@ def run_info(start, end, parameters = dict()):
             return
     if r.status_code > 201 :
         write_to_error_log(info, str(r.status_code))
-
 
 def check_door():
     return gpio.read_window_switches()
@@ -201,11 +231,11 @@ def voice_notification(action):
         else:
             robot.comment(f"Sound file does not exist. Call the technician")
 
-def reset_tipcount(file_path = '/data/A/tip_log.json'):
+def reset_tipcount(file_path = '/data/C/tip_log.json'):
     if os.path.isfile(file_path):
         os.remove(file_path)
 
-def retrieve_tip_info(pip,tipracks,file_path = '/data/A/tip_log.json'):
+def retrieve_tip_info(pip,tipracks,file_path = '/data/C/tip_log.json'):
     global tip_log
     if not tip_log['count'] or pip not in tip_log['count']:
         tip_log['count'][pip] = 0
@@ -233,7 +263,7 @@ def retrieve_tip_info(pip,tipracks,file_path = '/data/A/tip_log.json'):
 
     return tip_log
 
-def save_tip_info(file_path = '/data/A/tip_log.json'):
+def save_tip_info(file_path = '/data/C/tip_log.json'):
     data = {}
     if not robot.is_simulating():
         if os.path.isfile(file_path):
@@ -252,6 +282,7 @@ def save_tip_info(file_path = '/data/A/tip_log.json'):
 
         with open(file_path, 'a+') as outfile:
             json.dump(data, outfile)
+
 
 def pick_up(pip,tiprack):
     if tip_log['count'][pip] == tip_log['max'][pip]:
@@ -275,30 +306,72 @@ def drop(pip):
         drop_loc = robot.loaded_labwares[12].wells()[0].top().move(Point(x=20))
         pip.drop_tip(drop_loc,home_after=False)
 
-def transfer_buffer(bf_tube, dests, pip,tiprack):
-    max_trans_per_asp = 3  # 1000/VOLUME_BUFFER = 3
-    split_ind = [ind for ind in range(0, len(dests), max_trans_per_asp)]
-    dest_sets = [dests[split_ind[i]:split_ind[i+1]]
-             for i in range(len(split_ind)-1)] + [dests[split_ind[-1]:]]
-    pick_up(pip,tiprack)
-    pip.mix(3, 800, bf_tube.bottom(2))
-    for set in dest_sets:
-        pip.aspirate(50, bf_tube.bottom(2))
-        pip.distribute(VOLUME_BUFFER, bf_tube.bottom(2), [d.bottom(10) for d in set],
-                   air_gap=3, disposal_volume=0, new_tip='never')
-        pip.dispense(50,bf_tube.top(-20))
-    drop(pip)
+def get_source_dest_coordinates(source_racks, pcr_plate):
+    # Keep floor
+    num_cols = math.floor(NUM_SAMPLES/8)
+    # Keep the remaining samples
+    num_samples_m = int(num_cols*8)
+
+    if 'strip' in ELUTION_LABWARE:
+        if NUM_SAMPLES > 8:
+            sources_m = [
+                col
+                for i, rack in enumerate(source_racks)
+                for col in [
+                    rack.columns()[c] if i < 2 else rack.columns()[c+1]
+                    for c in [0, 5, 10]
+                ]
+            ][:num_cols]
+
+        sources_s = [
+            well
+            for i, rack in enumerate(source_racks)
+            for col in [
+                rack.columns()[c] if i < 2 else rack.columns()[c+1]
+                for c in [0, 5, 10]
+            ]
+            for well in col
+        ][num_samples_m:NUM_SAMPLES]
+
+    elif 'plate' in ELUTION_LABWARE:
+        sources_m = source_racks.rows()[0][:num_cols]
+        sources_s = source_racks.wells()[num_samples_m:NUM_SAMPLES]
+
+    dests_m = pcr_plate.rows()[0][:num_cols]
+    dests_s = pcr_plate.wells()[num_samples_m:NUM_SAMPLES]
+    return sources_m, sources_s, dests_m, dests_s
+
+def transfer_samples(sources, dests, pip,tiprack):
+    # height for aspiration has to be different depending if you ar using tubes or wells
+    if 'strip' in ELUTION_LABWARE or 'plate' in ELUTION_LABWARE:
+        height = 1.5
+    else:
+        height = 1
+    # transfer
+    for s, d in zip(sources, dests):
+        # Skip for negative control, position NUM_SAMPLES-2
+        #if s == sources[NUM_SAMPLES-2]:
+        #    continue
+
+        pick_up(pip,tiprack)
+        pip.transfer(VOLUME_ELUTION, s.bottom(height), d.bottom(2), air_gap=2, new_tip='never')
+        #p20.mix(1, 10, d.bottom(2))
+        #p20.blow_out(d.top(-2))
+        pip.aspirate(1, d.top(-2))
+        drop(pip)
 
 # RUN PROTOCOL
 def run(ctx: protocol_api.ProtocolContext):
     global robot
+
+    # Set robot as global var
     robot = ctx
 
     # check if tipcount is being reset
     if RESET_TIPCOUNT:
         reset_tipcount()
 
-    # confirm door is close
+    # confirm door is closed
     robot.comment(f"Please, close the door")
     confirm_door_is_closed()
 
@@ -306,53 +379,73 @@ def run(ctx: protocol_api.ProtocolContext):
     start_time = start_run()
 
     # define tips
-    tips1000 = [robot.load_labware('opentrons_96_filtertiprack_1000ul',
-                                     3, '1000µl tiprack')]
+    tips20 = [
+        robot.load_labware('opentrons_96_filtertiprack_20ul', 6)
+    ]
+    tipsm20 = [
+        robot.load_labware('opentrons_96_filtertiprack_20ul', 3)
+    ]
 
-    # define pipettes
-    p1000 = robot.load_instrument('p1000_single_gen2', 'left', tip_racks=tips1000)
+    if MM_LABWARE not in MM_LW_DICT:
+        raise Exception('Invalid MM_LABWARE. Must be one of the following:\n' + '\n'.join(list(MM_LW_DICT.keys())))
 
-    # Retrieve tip log
-    retrieve_tip_info(p1000,tips1000)
-    # check buffer labware type
-    if BUFFER_LABWARE not in BUFFER_LW_DICT:
-        raise Exception('Invalid BF_LABWARE. Must be one of the \
-following:\nopentrons plastic 50ml tubes')
 
     # load mastermix labware
-    buffer_rack = robot.load_labware(
-        BUFFER_LW_DICT[BUFFER_LABWARE], '10',
-        BUFFER_LABWARE)
+    mm_rack = robot.load_labware(
+        MM_LW_DICT[MM_LABWARE], '11',
+        MM_LABWARE)
 
-    # check mastermix tube labware type
-    if DESTINATION_LABWARE not in DESTINATION_LW_DICT:
-        raise Exception('Invalid DESTINATION_LABWARE. Must be one of the \
-    following:\nopentrons plastic 2ml tubes')
+
+    # define pipettes
+    p20 = robot.load_instrument('p20_single_gen2', 'right', tip_racks=tips20)
+    m20 = robot.load_instrument('p20_multi_gen2', 'left', tip_racks=tipsm20)
+
+    ## retrieve tip_log
+    retrieve_tip_info(p20,tips20)
+    retrieve_tip_info(m20,tipsm20)
+
+    # tempdeck module
+    tempdeck = robot.load_module('tempdeck', '10')
+    tempdeck.set_temperature(4)
+
+    # check pcr plate
+    if PCR_LABWARE not in PCR_LW_DICT:
+        raise Exception('Invalid PCR_LABWARE. Must be one of the following:\n' + '\n'.join(list(PCR_LW_DICT.keys())))
+
+
+    # load pcr plate
+    pcr_plate = tempdeck.load_labware(
+        PCR_LW_DICT[PCR_LABWARE], 'PCR plate')
+
+    # check source (elution) labware type
+    if ELUTION_LABWARE not in EL_LW_DICT:
+        raise Exception('Invalid ELUTION_LABWARE. Must be one of the following:\n' + '\n'.join(list(EL_LW_DICT.keys())))
 
     # load elution labware
-    dest_racks = [
-            robot.load_labware(DESTINATION_LW_DICT[DESTINATION_LABWARE], slot,
-                            'Destination tubes labware ' + str(i+1))
+    if 'plate' in ELUTION_LABWARE:
+        source_racks = robot.load_labware(
+            EL_LW_DICT[ELUTION_LABWARE], '1',
+            'RNA elution labware')
+    else:
+        source_racks = [
+            robot.load_labware(EL_LW_DICT[ELUTION_LABWARE], slot,
+                            'RNA elution labware ' + str(i+1))
             for i, slot in enumerate(['4', '1', '5', '2'])
     ]
 
     # setup sample sources and destinations
-    bf_tubes = buffer_rack.wells()[:4]
-    number_racks = math.ceil(NUM_SAMPLES/len(dest_racks[0].wells()))
+    sources_m, sources_s, dests_m, dests_s = get_source_dest_coordinates(source_racks, pcr_plate)
 
-    # dest_sets is a list of lists. Each list is the destination well for each rack
-    # example: [[tube1,tube2,...tube24](first rack),[tube1,tube2(second rack),...]
-    dest_sets = [
-        [tube
-         for rack in dest_racks
-         for tube in rack.wells()
-        ][:NUM_SAMPLES][i*len(dest_racks[0].wells()):(i+1)*len(dest_racks[0].wells())]
-        for i in range(number_racks)
-        ]
+    # transfer samples to corresponding locations
+    if NUM_SAMPLES >= 8:
+        transfer_samples(sources_m,dests_m,m20,tipsm20)
+    transfer_samples(sources_s, dests_s, p20,tips20)
 
-    # transfer buffer to tubes
-    for bf_tube,dests in zip(bf_tubes,dest_sets):
-        transfer_buffer(bf_tube, dests, p1000, tips1000)
+    # transfer negative control to position NUM_SAMPLES-2
+    pick_up(p20, tips20)
+    dests = pcr_plate.wells()[:NUM_SAMPLES]
+    p20.transfer(VOLUME_ELUTION, mm_rack.wells()[4].bottom(1), dests[NUM_SAMPLES-2].bottom(2), air_gap=2, new_tip='never')
+    drop(p20)
 
     # track final used tip
     save_tip_info()
@@ -361,10 +454,10 @@ following:\nopentrons plastic 50ml tubes')
 
     par = {
         "NUM_SAMPLES" : NUM_SAMPLES,
-        "BUFFER_LABWARE" : BUFFER_LABWARE,
-        "DESTINATION_LABWARE" : DESTINATION_LABWARE,
-        "DEST_TUBE" : DEST_TUBE,
-        "VOLUME_BUFFER" : VOLUME_BUFFER,
+        "MM_LABWARE" : MM_LABWARE,
+        "PCR_LABWARE" : PCR_LABWARE,
+        "ELUTION_LABWARE" : ELUTION_LABWARE,
+        "VOLUME_ELUTION" : VOLUME_ELUTION,
         "LANGUAGE" : LANGUAGE,
         "RESET_TIPCOUNT" : RESET_TIPCOUNT
     }

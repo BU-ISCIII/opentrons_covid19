@@ -4,8 +4,8 @@ from opentrons.drivers.rpi_drivers import gpio
 import time
 import math
 import os
-import sys
 import subprocess
+import sys
 import json
 from datetime import datetime
 custom_modules_path = "/var/user-packages/usr/lib/python3.7/site-packages"
@@ -38,7 +38,7 @@ REAGENT SETUP:
 # Warning writing any Parameters below this line.
 # It will be deleted if opentronsWeb is used.
 
-NUM_SAMPLES = 96
+NUM_SAMPLES = 24
 REAGENT_LABWARE = 'nest 12 reservoir plate'
 MAGPLATE_LABWARE = 'nest deep generic well plate'
 WASTE_LABWARE = 'nest 1 reservoir plate'
@@ -46,7 +46,7 @@ ELUTION_LABWARE = 'opentrons aluminum nest plate'
 DISPENSE_BEADS = False
 REUSE_TIPS = True
 LANGUAGE = 'esp'
-RESET_TIPCOUNT = False
+RESET_TIPCOUNT = True
 PROTOCOL_ID = "0000-AA"
 URL = 'localhost'
 # End Parameters to adapt the protocol
@@ -144,7 +144,7 @@ elif LANGUAGE_DICT[LANGUAGE] == 'esp':
 
 def write_to_error_log (info, reason):
     date = datetime.now().strftime("%Y_%m_%d")
-    folder_date = os.path.join('/data/logs', date)
+    folder_date = os.path.join('/data', date)
     time_now = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     json_file = time_now + '.json'
     folder_file_name = os.path.join(folder_date, json_file)
@@ -253,14 +253,10 @@ def retrieve_tip_info(pip,tipracks,file_path = '/data/B/tip_log.json'):
                     data = json.load(json_file)
                     if 'P1000' in str(pip):
                         tip_log['count'][pip] = data['tips1000']
-                    elif 'P300' in str(pip) and 'Single-Channel' in str(pip):
+                    elif 'P300' in str(pip):
                         tip_log['count'][pip] = data['tips300']
-                    elif 'P300' in str(pip) and '8-Channel' in str(pip):
-                        tip_log['count'][pip] = data['tipsm300']
-                    elif 'P20' in str(pip) and 'Single-Channel' in str(pip):
+                    elif 'P20' in str(pip):
                         tip_log['count'][pip] = data['tips20']
-                    elif 'P20' in str(pip) and '8-Channel' in str(pip):
-                        tip_log['count'][pip] = data['tipsm20']
 
         if "8-Channel" in str(pip):
             tip_log['tips'][pip] =  [tip for rack in tipracks for tip in rack.rows()[0]]
@@ -279,14 +275,10 @@ def save_tip_info(file_path = '/data/B/tip_log.json'):
         for pip in tip_log['count']:
             if "P1000" in str(pip):
                 data['tips1000'] = tip_log['count'][pip]
-            elif 'P300' in str(pip) and 'Single-Channel' in str(pip):
+            elif "P300" in str(pip):
                 data['tips300'] = tip_log['count'][pip]
-            elif 'P300' in str(pip) and '8-Channel' in str(pip):
-                data['tipsm300'] = tip_log['count'][pip]
-            elif 'P20' in str(pip) and 'Single-Channel' in str(pip):
+            elif "P20" in str(pip):
                 data['tips20'] = tip_log['count'][pip]
-            elif 'P20' in str(pip) and '8-Channel' in str(pip):
-                data['tipsm20'] = tip_log['count'][pip]
 
         with open(file_path, 'a+') as outfile:
             json.dump(data, outfile)
@@ -348,7 +340,7 @@ def remove_supernatant(sources,waste,pip,tiprack):
     for i, m in enumerate(sources):
         loc = m.bottom(1)
         pick_up(pip,tiprack)
-        pip.transfer(810, loc, waste, air_gap=100, new_tip='never')
+        pip.transfer(800, loc, waste, air_gap=100, new_tip='never')
         pip.blow_out(waste)
         drop(pip)
 
@@ -360,22 +352,20 @@ def wash_reuse(wash_sets,dests,waste,magdeck,pip,tiprack,tipreuse):
         for i, m in enumerate(dests):
             magdeck.disengage()
             wash_chan = wash_set[i//6]
-            dispense_default_speed = pip.flow_rate.dispense
-            pip.flow_rate.dispense = 200
-            pip.transfer(200, wash_chan.bottom(2), m.top(), new_tip='never', air_gap=20)
-            pip.flow_rate.dispense = dispense_default_speed
+            pip.transfer(
+                200, wash_chan.bottom(2), m.top(), new_tip='never', air_gap=20)
 
         # mix beads with wash
         tips_loc = 0
         for i, m in enumerate(dests):
 
-            if tips_loc == 0:
-                drop(pip)
-
             if  wash_num != 0:
+                if tips_loc == 0:
+                    drop(pip)
                 pip.pick_up_tip(tipreuse[0].rows()[0][tips_loc])
             else:
-                pick_up(pip,tiprack)
+                if tips_loc != 0:
+                    pick_up(pip,tiprack)
 
             dispense_default_speed = pip.flow_rate.dispense
             pip.flow_rate.dispense = 1500
@@ -388,7 +378,7 @@ def wash_reuse(wash_sets,dests,waste,magdeck,pip,tiprack,tipreuse):
             tips_loc += 1
 
         magdeck.engage(height_from_base=MAGNET_HEIGHT)
-        robot.delay(seconds=75, msg='Incubating on magnet for 75 seconds.')
+        # robot.delay(seconds=75, msg='Incubating on magnet for 75 seconds.')
 
         wash_num += 1
 
@@ -424,7 +414,7 @@ def wash(wash_sets,dests,waste,magdeck,pip,tiprack):
             pip.flow_rate.dispense = dispense_default_speed
 
             magdeck.engage(height_from_base=MAGNET_HEIGHT)
-            robot.delay(seconds=75, msg='Incubating on magnet for 75 seconds.')
+            # robot.delay(seconds=75, msg='Incubating on magnet for 75 seconds.')
 
             # remove supernatant
             aspire_default_speed = pip.flow_rate.aspirate
@@ -434,40 +424,6 @@ def wash(wash_sets,dests,waste,magdeck,pip,tiprack):
             pip.flow_rate.aspirate = aspire_default_speed
             pip.blow_out(waste)
             drop(pip)
-
-def elute_samples_reuse(sources,dests,buffer,magdeck,pip,tipracks,tipreuse):
-    ## dispense buffer
-    tips_loc = 0
-    for i, m in enumerate(sources):
-        pick_up(pip,tipracks)
-        dispense_default_speed = pip.flow_rate.dispense
-        pip.flow_rate.dispense = 1500
-        pip.transfer(
-            50, buffer.bottom(2), m.bottom(1), new_tip='never', air_gap=10)
-        pip.mix(20, 200, m.bottom(1))
-        pip.flow_rate.dispense = dispense_default_speed
-        pip.drop_tip(tipreuse[0].rows()[0][tips_loc], home_after=False)
-        tips_loc += 1
-
-    ## Incubation steps
-    robot.delay(minutes=5, msg='Incubating off magnet for 5 minutes.')
-    magdeck.engage(height_from_base=MAGNET_HEIGHT)
-    robot.delay(seconds=120, msg='Incubating on magnet for 120 seconds.')
-
-    aspire_default_speed = pip.flow_rate.aspirate
-    pip.flow_rate.aspirate = 50
-    ## Dispense elutes in pcr plate.
-    tips_loc = 0
-    for i, (m, e) in enumerate(zip(sources, dests)):
-        # tranfser and mix elution buffer with beads
-        asp_loc = m.bottom(1.5)
-        pip.pick_up_tip(tipreuse[0].rows()[0][tips_loc])
-        # transfer elution to new plate
-        pip.transfer(50, asp_loc, e, new_tip='never', air_gap=10)
-        pip.blow_out(e.top(-2))
-        drop(pip)
-        tips_loc += 1
-    pip.flow_rate.aspirate = aspire_default_speed
 
 def elute_samples(sources,dests,buffer,magdeck,pip,tipracks):
     ## dispense buffer
@@ -482,9 +438,9 @@ def elute_samples(sources,dests,buffer,magdeck,pip,tipracks):
         drop(pip)
 
     ## Incubation steps
-    robot.delay(minutes=5, msg='Incubating off magnet for 5 minutes.')
+    # robot.delay(minutes=5, msg='Incubating off magnet for 5 minutes.')
     magdeck.engage(height_from_base=MAGNET_HEIGHT)
-    robot.delay(seconds=120, msg='Incubating on magnet for 120 seconds.')
+    # robot.delay(seconds=120, msg='Incubating on magnet for 120 seconds.')
 
     aspire_default_speed = pip.flow_rate.aspirate
     pip.flow_rate.aspirate = 50
@@ -502,6 +458,9 @@ def elute_samples(sources,dests,buffer,magdeck,pip,tipracks):
 def run(ctx: protocol_api.ProtocolContext):
     global robot
     robot = ctx
+
+    text = str(sys.path)
+    robot.comment(text)
 
     # check if tipcount is being reset
     if RESET_TIPCOUNT:
@@ -547,43 +506,27 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
         raise Exception('Invalid REAGENT_LABWARE. Must be one of the \
     following:\nnest 12 reservoir plate')
 
-    if REUSE_TIPS == True:
-        reagent_res = robot.load_labware(
-            REAGENT_LW_DICT[REAGENT_LABWARE], '4', 'reagent reservoir')
-    else:
-        reagent_res = robot.load_labware(
-            REAGENT_LW_DICT[REAGENT_LABWARE], '7', 'reagent reservoir')
+    reagent_res = robot.load_labware(
+        REAGENT_LW_DICT[REAGENT_LABWARE], '4', 'reagent reservoir')
 
     ## TIPS
     # using standard tip definition despite actually using filter tips
     # so that the tips can accommodate ~220µl per transfer for efficiency
-    if REUSE_TIPS == True:
-        tips300 = [
-            robot.load_labware(
-                'opentrons_96_tiprack_300ul', slot, '200µl filter tiprack')
-            for slot in ['8', '6', '2', '3']
-        ]
-        tipsreuse = [
-            robot.load_labware(
-                'opentrons_96_tiprack_300ul', slot, '200µl filter tiprack')
-            for slot in ['7']
-        ]
-        tips1000 = [
-            robot.load_labware('opentrons_96_filtertiprack_1000ul', slot,
-                             '1000µl filter tiprack')
-            for slot in ['5']
-        ]
-    else:
-        tips300 = [
+    tips300 = [
         robot.load_labware(
             'opentrons_96_tiprack_300ul', slot, '200µl filter tiprack')
-            for slot in ['2', '3', '5', '6', '9','4']
-        ]
-        tips1000 = [
-            robot.load_labware('opentrons_96_filtertiprack_1000ul', slot,
-                             '1000µl filter tiprack')
-            for slot in ['8']
-        ]
+        for slot in ['2', '3', '5', '6', '9']
+    ]
+    tipsreuse = [
+        robot.load_labware(
+            'opentrons_96_tiprack_300ul', slot, '200µl filter tiprack')
+        for slot in ['7']
+    ]
+    tips1000 = [
+        robot.load_labware('opentrons_96_filtertiprack_1000ul', slot,
+                         '1000µl filter tiprack')
+        for slot in ['8']
+    ]
 
     # reagents and samples
     num_cols = math.ceil(NUM_SAMPLES/8)
@@ -620,23 +563,17 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
         mix_beads(7, mag_samples_m,m300,tips300)
 
     # incubate off the magnet
-    robot.delay(minutes=10, msg='Incubating off magnet for 10 minutes.')
+    # robot.delay(minutes=10, msg='Incubating off magnet for 10 minutes.')
 
     ## First incubate on magnet.
     magdeck.engage(height_from_base=MAGNET_HEIGHT)
-    robot.delay(minutes=7, msg='Incubating on magnet for 7 minutes.')
-
-    # empty trash
-    if NUM_SAMPLES >= 48:
-        voice_notification('empty_trash')
-        robot.pause(f"Please, empty trash")
-        confirm_door_is_closed()
+    # robot.delay(minutes=7, msg='Incubating on magnet for 7 minutes.')
 
     # remove supernatant with P1000
     remove_supernatant(mag_samples_s,waste,p1000,tips1000)
 
     # empty trash
-    if NUM_SAMPLES >= 48:
+    if NUM_SAMPLES > 24:
         voice_notification('empty_trash')
         robot.pause(f"Please, empty trash")
         confirm_door_is_closed()
@@ -647,12 +584,15 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
     else:
         wash(wash_sets,mag_samples_m,waste,magdeck,m300,tips300)
 
+    # empty trash
+    if NUM_SAMPLES > 72:
+        voice_notification('empty_trash')
+        robot.pause(f"Please, empty trash")
+        confirm_door_is_closed()
+
     # elute samples
     magdeck.disengage()
-    if REUSE_TIPS == True:
-        elute_samples_reuse(mag_samples_m,elution_samples_m,elution_buffer,magdeck,m300,tips300,tipsreuse)
-    else:
-        elute_samples(mag_samples_m,elution_samples_m,elution_buffer,magdeck,m300,tips300)
+    elute_samples(mag_samples_m,elution_samples_m,elution_buffer,magdeck,m300,tips300)
 
     # track final used tip
     save_tip_info()

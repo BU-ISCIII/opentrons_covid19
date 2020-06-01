@@ -4,9 +4,14 @@ from opentrons.drivers.rpi_drivers import gpio
 import time
 import math
 import os
+import sys
 import subprocess
 import json
 from datetime import datetime
+custom_modules_path = "/var/user-packages/usr/lib/python3.7/site-packages"
+if custom_modules_path not in sys.path:
+    sys.path.append(custom_modules_path)
+import requests
 
 # Metadata
 metadata = {
@@ -23,7 +28,7 @@ metadata = {
 NUM_SAMPLES = 96
 MM_LABWARE = 'opentrons aluminum block'
 MMTUBE_LABWARE = '2ml tubes'
-PCR_LABWARE = 'opentrons aluminum nest plate'
+PCR_LABWARE = 'opentrons aluminum biorad plate'
 ELUTION_LABWARE = 'opentrons aluminum nest plate'
 PREPARE_MASTERMIX = False
 MM_TYPE = 'MM1'
@@ -32,10 +37,10 @@ TRANSFER_MASTERMIX = True
 TRANSFER_SAMPLES = True
 LANGUAGE = 'esp'
 RESET_TIPCOUNT = False
-
+PROTOCOL_ID = "0000-AA"
+URL = 'localhost'
 # End Parameters to adapt the protocol
 ACTION = "StationC-protocol1-pcr"
-PROTOCOL_ID = "0000-AA"
 
 ## global vars
 ## initialize robot object
@@ -53,7 +58,7 @@ NUM_SAMPLES is the number of samples, must be an integer number
 
 MM_LABWARE must be one of the following:
     opentrons plastic block
-    pentrons aluminum block
+    opentrons aluminum block
     covidwarriors aluminum block
 
 MMTUBE_LABWARE must be one of the following:
@@ -164,7 +169,31 @@ elif LANGUAGE_DICT[LANGUAGE] == 'esp':
 
 
 # Function definitions
-# Function definitions
+
+
+def write_to_error_log (info, reason):
+    date = datetime.now().strftime("%Y_%m_%d")
+    folder_date = os.path.join('/data/logs', date)
+    time_now = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+    json_file = time_now + '.json'
+    folder_file_name = os.path.join(folder_date, json_file)
+    folder_error_log = os.path.join(folder_date,'error.log')
+    if not os.path.exists(folder_date):
+        try:
+            os.makedirs(folder_date)
+        except:
+            return
+    try:
+        # Create a new file for dumping json data
+        with open (folder_file_name , 'w') as fh:
+            json.dump(info, fh, indent=4)
+        # Append status reason code to the log
+        with open(folder_error_log, 'a') as fh:
+            fh.write( time_now +  '  Unable to accept the requests get error : '+ reason + '\n')
+    except:
+        return
+
+
 def run_info(start,end,parameters = dict()):
     info = {}
     hostname = subprocess.run(
@@ -179,9 +208,21 @@ def run_info(start,end,parameters = dict()):
     info["StartRunTime"] = start
     info["FinishRunTime"] = end
     info["parameters"] = parameters
-    # write json to file. This is going to be an api post.
-    #with open('run.json', 'w') as fp:
-        #json.dump(info, fp,indent=4)
+
+    headers = {'Content-type': 'application/json'}
+    url_https = 'https://' + URL
+    url_http = 'http://' + URL
+    try:
+        r = requests.post(url_https, data=json.dumps(info), headers=headers)
+    except:
+        try:
+            r = requests.post(url_http, data=json.dumps(info), headers=headers)
+        except:
+            write_to_error_log(info, 'Server communication error')
+            return
+    if r.status_code > 201 :
+        write_to_error_log(info, str(r.status_code))
+
 
 def check_door():
     return gpio.read_window_switches()
@@ -243,10 +284,14 @@ def retrieve_tip_info(pip,tipracks,file_path = '/data/C/tip_log.json'):
                     data = json.load(json_file)
                     if 'P1000' in str(pip):
                         tip_log['count'][pip] = data['tips1000']
-                    elif 'P300' in str(pip):
+                    elif 'P300' in str(pip) and 'Single-Channel' in str(pip):
                         tip_log['count'][pip] = data['tips300']
-                    elif 'P20' in str(pip):
+                    elif 'P300' in str(pip) and '8-Channel' in str(pip):
+                        tip_log['count'][pip] = data['tipsm300']
+                    elif 'P20' in str(pip) and 'Single-Channel' in str(pip):
                         tip_log['count'][pip] = data['tips20']
+                    elif 'P20' in str(pip) and '8-Channel' in str(pip):
+                        tip_log['count'][pip] = data['tipsm20']
 
         if "8-Channel" in str(pip):
             tip_log['tips'][pip] =  [tip for rack in tipracks for tip in rack.rows()[0]]
@@ -265,10 +310,14 @@ def save_tip_info(file_path = '/data/C/tip_log.json'):
         for pip in tip_log['count']:
             if "P1000" in str(pip):
                 data['tips1000'] = tip_log['count'][pip]
-            elif "P300" in str(pip):
+            elif 'P300' in str(pip) and 'Single-Channel' in str(pip):
                 data['tips300'] = tip_log['count'][pip]
-            elif "P20" in str(pip):
+            elif 'P300' in str(pip) and '8-Channel' in str(pip):
+                data['tipsm300'] = tip_log['count'][pip]
+            elif 'P20' in str(pip) and 'Single-Channel' in str(pip):
                 data['tips20'] = tip_log['count'][pip]
+            elif 'P20' in str(pip) and '8-Channel' in str(pip):
+                data['tipsm20'] = tip_log['count'][pip]
 
         with open(file_path, 'a+') as outfile:
             json.dump(data, outfile)
@@ -284,6 +333,16 @@ resuming.')
     pip.pick_up_tip(tip_log['tips'][pip][tip_log['count'][pip]])
     tip_log['count'][pip] += 1
 
+def drop(pip):
+    global switch
+    if "8-Channel" not in str(pip):
+        side = 1 if switch else -1
+        drop_loc = robot.loaded_labwares[12].wells()[0].top().move(Point(x=side*20))
+        pip.drop_tip(drop_loc,home_after=False)
+        switch = not switch
+    else:
+        drop_loc = robot.loaded_labwares[12].wells()[0].top().move(Point(x=20))
+        pip.drop_tip(drop_loc,home_after=False)
 def drop(pip):
     global switch
     if "8-Channel" not in str(pip):
@@ -349,8 +408,7 @@ def homogenize_mm(mm_tube, pip, tiprack, times=5):
         pip.dispense(200, mm_tube.bottom(volume_height))
     # blow out before dropping tip
     pip.blow_out(mm_tube.top(-2))
-    if VOLUME_MMIX < 20:
-        drop(p300)
+    drop(pip)
 
 def prepare_mastermix(mm_rack, p300, p20,tiprack300,tiprack20):
     # setup mastermix coordinates
@@ -417,6 +475,7 @@ def transfer_mastermix(mm_tube, dests, p300, p20, tiprack300, tiprack20):
     # get initial fluid height to avoid overflowing mm when aspiring
     mm_volume = VOLUME_MMIX * NUM_SAMPLES
     volume_height = get_mm_height(mm_volume)
+    dest_count = 0
     for set in dest_sets:
         # check height and if it is low enought, aim for the bottom
         if volume_height < 5:
@@ -430,7 +489,12 @@ def transfer_mastermix(mm_tube, dests, p300, p20, tiprack300, tiprack20):
         pip.distribute(VOLUME_MMIX, disp_loc, [d.bottom(2) for d in set],
                    air_gap=1, disposal_volume=0, new_tip='never')
         pip.blow_out(disp_loc)
-    drop(pip)
+        dest_count += 1
+        if (dest_count % 3 == 0) and pip == p20:
+            drop(pip)
+            pick_up(pip,tiprack)
+    if pip.hw_pipette['has_tip']:
+        drop(pip)
 
 def transfer_samples(sources, dests, pip,tiprack):
     # height for aspiration has to be different depending if you ar useing tubes or wells
@@ -454,7 +518,6 @@ def transfer_samples(sources, dests, pip,tiprack):
 # RUN PROTOCOL
 def run(ctx: protocol_api.ProtocolContext):
     global robot
-    global tip_log
 
     # Set robot as global var
     robot = ctx
@@ -471,10 +534,7 @@ def run(ctx: protocol_api.ProtocolContext):
     start_time = start_run()
 
     # define tips
-    tips20 = [
-        robot.load_labware('opentrons_96_filtertiprack_20ul', slot)
-        for slot in ['6', '9', '8', '7']
-    ]
+    tips20 = [robot.load_labware('opentrons_96_filtertiprack_20ul', '6')]
     tips300 = [robot.load_labware('opentrons_96_filtertiprack_200ul', '3')]
 
     # define pipettes
@@ -541,14 +601,14 @@ def run(ctx: protocol_api.ProtocolContext):
             drop(p300)
     else:
         mm_tube = mm_rack.wells()[0]
-        if TRANSFER_MASTERMIX:
-            homogenize_mm(mm_tube, p300,tips300)
 
     # transfer mastermix
     if TRANSFER_MASTERMIX:
         transfer_mastermix(mm_tube, dests, p300, p20, tips300, tips20)
         if TRANSFER_SAMPLES:
-            robot.pause(f"Please, check that all wells have received the right ammount of mastermix")
+            robot.comment(f"Please, check that all wells have received the right ammount of mastermix")
+            if not robot.is_simulating():
+                robot.pause()
 
     # transfer samples to corresponding locations
     if TRANSFER_SAMPLES:

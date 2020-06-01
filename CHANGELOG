@@ -1,3 +1,54 @@
+## Version 1.8
+
+New features:
+- Reduced dispense speed when dispensing washes from the top of the wells to avoid spaying in protocol B.
+- Implemented reuse of tips for elutes in protocol B.
+- Added double definition of labware to fuse both reuse tips protocol B options in only one files.
+
+Protocol modifications:
+- Increased supernatant removal to 810 ul to remove all of it in protocol B.
+- Removed reuse of first tip in washes in protocol B.
+- Protocol B labware layout has now two possible configurations, a legacy one for the old version of the protocol without tips reuse and the new optimised one.
+- Protocol C does not mix master mix any longer if not prepared in the machine to avoid creating bubbles.
+
+Bug fixes:
+- Replaced default plate for biorad in protocol C.
+- Fixed tip tracking for the case where we have same p20 both multi-channel and single-channel in protocol C.
+- Fixed bug not transferring samples for exactly 8 samples with multi-channel in protocol C.
+- Fixed bug not changing trash for 48 samples exactly in protocol B.
+- Fixed bug added missing pick up tip for protocol C.
+- Fixed bug mm_tube not decalred in protocol C.
+
+## Version 1.7
+
+New features:
+- Added json sending using request. Requests python module is installed in all robots.
+- Automatic tests added using github actions for all protocols (except C station due to a bug in opentrons_simulate v.3.17.0 )
+- New protocol for using multi p20 pipette in station C for transferring extracts.
+- Now there are two pauses in B station for removing trash tips when > 48 samples. One after mix y another after remove_supernatant.
+- Added tip-reuse option for Station B protocol 1 (extraction).
+- Added labware definition for biotix tip rack 300 ul (needs testing).
+- Added labware definition for biotix tip rack 1000 ul (needs testing).
+- Added labware ecogen deepwell to protocols A (this was missing in last release).
+
+Protocol modification:
+- For MM3 distribution in station C protocol 1 tip is changed every three columns.
+- Once mastermix is mixed in station C protocol 1 tip is changed.
+- Only one p20 rack tips in station C protocol 1 in slot 6.
+
+Bug fixes:
+- Fixed unset variable in dispense_beads protocol 1 station B. 2ab984b
+
+## Version 1.6
+Hotfix:
+- Fix bug in hommogenize function in C protocol, used pip instead of
+p300.
+
+## Version 1.5
+Hotfix:
+- Removed comments where MAGNET_HEIGHT variable that were bothering
+opentronsweb
+
 ## Version 1.4
 Documentation:
 - Added user manual in spanish and english.

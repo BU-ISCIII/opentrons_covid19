@@ -4,9 +4,14 @@ from opentrons.drivers.rpi_drivers import gpio
 import time
 import math
 import os
+import sys
 import subprocess
 import json
 from datetime import datetime
+custom_modules_path = "/var/user-packages/usr/lib/python3.7/site-packages"
+if custom_modules_path not in sys.path:
+    sys.path.append(custom_modules_path)
+import requests
 
 
 # metadata
@@ -27,10 +32,11 @@ VOLUME_BEADS = 410
 DILUTE_BEADS = True
 LANGUAGE = 'esp'
 RESET_TIPCOUNT = False
-
+PROTOCOL_ID = "0000-AA"
+URL = 'localhost'
 # End Parameters to adapt the protocol
 ACTION = "StationA-protocol2-beads"
-PROTOCOL_ID = "0000-AA"
+
 ## global vars
 ## initialize robot object
 robot = None
@@ -46,23 +52,25 @@ tip_log['max'] = {}
 NUM_SAMPLES is the number of samples, must be an integer number
 
 BEADS_LABWARE must be one of the following:
-    opentrons plastic 50 ml tubes
+    opentrons plastic 50ml tubes
     opentrons plastic 30ml tubes
 
 PLATE_LABWARE must be one of the following:
     opentrons deep generic well plate
     nest deep generic well plate
     vwr deep generic well plate
+    ecogen deep generic well plate
 """
 
 BD_LW_DICT = {
-    'opentrons plastic 50 ml tubes': 'opentrons_6_tuberack_falcon_50ml_conical',
+    'opentrons plastic 50ml tubes': 'opentrons_6_tuberack_falcon_50ml_conical',
     'opentrons plastic 30ml tubes': 'opentrons_6_tuberack_generic_30ml_conical'
 }
 
 PL_LW_DICT = {
     'opentrons deep generic well plate': 'usascientific_96_wellplate_2.4ml_deep',
     'nest deep generic well plate': 'nest_96_deepwellplate_2000ul',
+    'ecogen deep generic well plate': 'ecogen_96_deepwellplate_2000ul',
     'vwr deep generic well plate': 'vwr_96_deepwellplate_2000ul'
 }
 
@@ -89,6 +97,28 @@ elif LANGUAGE_DICT[LANGUAGE] == 'esp':
     }
 
 # Function definitions
+def write_to_error_log (info, reason):
+    date = datetime.now().strftime("%Y_%m_%d")
+    folder_date = os.path.join('/data/logs', date)
+    time_now = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+    json_file = time_now + '.json'
+    folder_file_name = os.path.join(folder_date, json_file)
+    folder_error_log = os.path.join(folder_date,'error.log')
+    if not os.path.exists(folder_date):
+        try:
+            os.makedirs(folder_date)
+        except:
+            return
+    try:
+        # Create a new file for dumping json data
+        with open (folder_file_name , 'w') as fh:
+            json.dump(info, fh, indent=4)
+        # Append status reason code to the log
+        with open(folder_error_log, 'a') as fh:
+            fh.write( time_now +  '  Unable to accept the requests get error : '+ reason + '\n')
+    except:
+        return
+
 def run_info(start, end, parameters = dict()):
     info = {}
     hostname = subprocess.run(
@@ -103,9 +133,21 @@ def run_info(start, end, parameters = dict()):
     info["StartRunTime"] = start
     info["FinishRunTime"] = end
     info["parameters"] = parameters
-    # write json to file. This is going to be an api post.
-    #with open('run.json', 'w') as fp:
-        #json.dump(info, fp,indent=4)
+
+    headers = {'Content-type': 'application/json'}
+    url_https = 'https://' + URL
+    url_http = 'http://' + URL
+    try:
+        r = requests.post(url_https, data=json.dumps(info), headers=headers)
+    except:
+        try:
+            r = requests.post(url_http, data=json.dumps(info), headers=headers)
+        except:
+            write_to_error_log(info, 'Server communication error')
+            return
+    if r.status_code > 201 :
+        write_to_error_log(info, str(r.status_code))
+
 
 def check_door():
     return gpio.read_window_switches()
@@ -167,10 +209,14 @@ def retrieve_tip_info(pip,tipracks,file_path = '/data/A/tip_log.json'):
                     data = json.load(json_file)
                     if 'P1000' in str(pip):
                         tip_log['count'][pip] = data['tips1000']
-                    elif 'P300' in str(pip):
+                    elif 'P300' in str(pip) and 'Single-Channel' in str(pip):
                         tip_log['count'][pip] = data['tips300']
-                    elif 'P20' in str(pip):
+                    elif 'P300' in str(pip) and '8-Channel' in str(pip):
+                        tip_log['count'][pip] = data['tipsm300']
+                    elif 'P20' in str(pip) and 'Single-Channel' in str(pip):
                         tip_log['count'][pip] = data['tips20']
+                    elif 'P20' in str(pip) and '8-Channel' in str(pip):
+                        tip_log['count'][pip] = data['tipsm20']
 
         if "8-Channel" in str(pip):
             tip_log['tips'][pip] =  [tip for rack in tipracks for tip in rack.rows()[0]]
@@ -189,10 +235,14 @@ def save_tip_info(file_path = '/data/A/tip_log.json'):
         for pip in tip_log['count']:
             if "P1000" in str(pip):
                 data['tips1000'] = tip_log['count'][pip]
-            elif "P300" in str(pip):
+            elif 'P300' in str(pip) and 'Single-Channel' in str(pip):
                 data['tips300'] = tip_log['count'][pip]
-            elif "P20" in str(pip):
+            elif 'P300' in str(pip) and '8-Channel' in str(pip):
+                data['tipsm300'] = tip_log['count'][pip]
+            elif 'P20' in str(pip) and 'Single-Channel' in str(pip):
                 data['tips20'] = tip_log['count'][pip]
+            elif 'P20' in str(pip) and '8-Channel' in str(pip):
+                data['tipsm20'] = tip_log['count'][pip]
 
         with open(file_path, 'a+') as outfile:
             json.dump(data, outfile)
@@ -244,10 +294,10 @@ def transfer_beads(beads_tube, dests, pip,tiprack):
              for i in range(len(split_ind)-1)] + [dests[split_ind[-1]:]]
     # pick_up(pip,tiprack)
     # Mix bead tubes prior to dispensing
-    pip.flow_rate.aspirate = 800
-    pip.flow_rate.dispense = 8000
+    pip.flow_rate.aspirate = 1000
+    pip.flow_rate.dispense = 10000
     # pip.mix(12,800,beads_tube.bottom(15))
-    for i in range(12):
+    for i in range(15):
         pip.aspirate(800, beads_tube.bottom(30))
         pip.dispense(800, beads_tube.bottom(2))
     pip.flow_rate.aspirate = 100
@@ -287,8 +337,8 @@ def run(ctx: protocol_api.ProtocolContext):
 
     # check source (elution) labware type
     if BEADS_LABWARE not in BD_LW_DICT:
-        raise Exception('Invalid BF_LABWARE. Must be one of the \
-following:\nopentrons plastic 50ml tubes')
+        raise Exception('Invalid BD_LABWARE. Must be one of the \
+following:\nopentrons plastic 50ml tubes\nopentrons plastic 30ml tubes')
 
     # load mastermix labware
     beads_rack = robot.load_labware(
