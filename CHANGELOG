@@ -9,6 +9,7 @@ Protocol modifications:
 - Increased supernatant removal to 810 ul to remove all of it in protocol B.
 - Removed reuse of first tip in washes in protocol B.
 - Protocol B labware layout has now two possible configurations, a legacy one for the old version of the protocol without tips reuse and the new optimised one.
+- Protocol C does not mix master mix any longer if not prepared in the machine to avoid creating bubbles.
 
 Bug fixes:
 - Replaced default plate for biorad in protocol C.
@@ -16,6 +17,7 @@ Bug fixes:
 - Fixed bug not transferring samples for exactly 8 samples with multi-channel in protocol C.
 - Fixed bug not changing trash for 48 samples exactly in protocol B.
 - Fixed bug added missing pick up tip for protocol C.
+- Fixed bug mm_tube not decalred in protocol C.
 
 ## Version 1.7
 
