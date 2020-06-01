@@ -340,7 +340,7 @@ def remove_supernatant(sources,waste,pip,tiprack):
     for i, m in enumerate(sources):
         loc = m.bottom(1)
         pick_up(pip,tiprack)
-        pip.transfer(800, loc, waste, air_gap=100, new_tip='never')
+        pip.transfer(810, loc, waste, air_gap=100, new_tip='never')
         pip.blow_out(waste)
         drop(pip)
 
