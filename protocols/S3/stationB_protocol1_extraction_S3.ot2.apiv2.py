@@ -433,6 +433,36 @@ def wash(wash_sets,dests,waste,magdeck,pip,tiprack):
             pip.blow_out(waste)
             drop(pip)
 
+def elute_samples_reuse(sources,dests,buffer,magdeck,pip,tipracks,tipreuse):
+    ## dispense buffer
+    for i, m in enumerate(sources):
+        pick_up(pip,tipracks)
+        dispense_default_speed = pip.flow_rate.dispense
+        pip.flow_rate.dispense = 1500
+        pip.transfer(
+            50, buffer.bottom(2), m.bottom(1), new_tip='never', air_gap=10)
+        pip.mix(20, 200, m.bottom(1))
+        pip.flow_rate.dispense = dispense_default_speed
+        drop(pip)
+
+    ## Incubation steps
+    robot.delay(minutes=5, msg='Incubating off magnet for 5 minutes.')
+    magdeck.engage(height_from_base=MAGNET_HEIGHT)
+    robot.delay(seconds=120, msg='Incubating on magnet for 120 seconds.')
+
+    aspire_default_speed = pip.flow_rate.aspirate
+    pip.flow_rate.aspirate = 50
+    ## Dispense elutes in pcr plate.
+    for i, (m, e) in enumerate(zip(sources, dests)):
+        # tranfser and mix elution buffer with beads
+        asp_loc = m.bottom(1.5)
+        pick_up(pip,tipracks)
+        # transfer elution to new plate
+        pip.transfer(50, asp_loc, e, new_tip='never', air_gap=10)
+        pip.blow_out(e.top(-2))
+        drop(pip)
+    pip.flow_rate.aspirate = aspire_default_speed
+
 def elute_samples(sources,dests,buffer,magdeck,pip,tipracks):
     ## dispense buffer
     for i, m in enumerate(sources):
@@ -597,7 +627,10 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
 
     # elute samples
     magdeck.disengage()
-    elute_samples(mag_samples_m,elution_samples_m,elution_buffer,magdeck,m300,tips300)
+    if REUSE_TIPS == True:
+        elute_samples_reuse(mag_samples_m,elution_samples_m,elution_buffer,magdeck,m300,tips300,tipsreuse)
+    else:
+        elute_samples(mag_samples_m,elution_samples_m,elution_buffer,magdeck,m300,tips300)
 
     # track final used tip
     save_tip_info()
