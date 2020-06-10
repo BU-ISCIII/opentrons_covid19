@@ -651,10 +651,7 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
 
     # elute samples
     magdeck.disengage()
-    if REUSE_TIPS == True:
-        elute_samples_reuse(mag_samples_m,elution_samples_m,elution_buffer,magdeck,m300,tips300,tipsreuse)
-    else:
-        elute_samples(mag_samples_m,elution_samples_m,elution_buffer,magdeck,m300,tips300)
+    elute_samples(mag_samples_m,elution_samples_m,elution_buffer,magdeck,m300,tips300)
 
     # track final used tip
     save_tip_info()
