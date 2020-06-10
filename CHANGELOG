@@ -1,3 +1,14 @@
+## Version 1.9
+
+New features:
+-
+
+Protocol modifications:
+- Protocol B now aspirates larger volumes of supernatant and washes than dispensed, in order to remove residual volumes left due to pipetting error and drops attached to tips.
+
+Bug fixes:
+- Fixed bug robot trying to send request when simulating
+
 ## Version 1.8
 
 New features:
