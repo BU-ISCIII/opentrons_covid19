@@ -107,12 +107,12 @@ ACTION = "StationB-protocol1-extraction"
 
 # Constants
 TIPS300_LW_DICT = {
-    'biotix': 'Biotix 96 Filter Tip Rack 300 µL',
+    'biotix': 'biotix_96_tiprack_300ul_flat',
     'opentrons': 'opentrons_96_tiprack_300ul'
 }
 
 TIPS1000_LW_DICT = {
-    'biotix': 'Biotix 96 Filter Tip Rack 1000 µL',
+    'biotix': 'biotix_96_tiprack_1000ul_flat',
     'opentrons': 'opentrons_96_tiprack_1000ul'
 }
 
