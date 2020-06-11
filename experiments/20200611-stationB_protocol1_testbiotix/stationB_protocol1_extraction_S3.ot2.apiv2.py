@@ -112,7 +112,7 @@ TIPS300_LW_DICT = {
 }
 
 TIPS1000_LW_DICT = {
-    'biotix': 'biotix_96_tiprack_1000ul_flat',
+    'biotix': 'biotix_96_tiprack_1000ul',
     'opentrons': 'opentrons_96_tiprack_1000ul'
 }
 
