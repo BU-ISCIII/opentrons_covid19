@@ -44,6 +44,8 @@ MAGPLATE_LABWARE = 'nest deep generic well plate'
 WASTE_LABWARE = 'nest 1 reservoir plate'
 ELUTION_LABWARE = 'opentrons aluminum nest plate'
 DISPENSE_BEADS = False
+TIPS300 = 'biotix'
+TIPS1000 = 'biotix'
 REUSE_TIPS = True
 LANGUAGE = 'esp'
 RESET_TIPCOUNT = False
@@ -64,6 +66,14 @@ tip_log['max'] = {}
 
 """
 NUM_SAMPLES is the number of samples, must be an integer number
+
+TIPS 300
+    biotix
+    opentrons
+
+TIPS 1000
+    biotix
+    opentrons
 
 REAGENT_LABWARE must be one of the following:
     nest 12 reservoir plate
@@ -96,6 +106,16 @@ else:
 ACTION = "StationB-protocol1-extraction"
 
 # Constants
+TIPS300_LW_DICT = {
+    'biotix': 'Biotix 96 Filter Tip Rack 300 µL',
+    'opentrons': 'opentrons_96_tiprack_300ul'
+}
+
+TIPS1000_LW_DICT = {
+    'biotix': 'Biotix 96 Filter Tip Rack 1000 µL',
+    'opentrons': 'opentrons_96_tiprack_1000ul'
+}
+
 REAGENT_LW_DICT = {
     'nest 12 reservoir plate': 'nest_12_reservoir_15ml'
 }
@@ -559,10 +579,18 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
     ## TIPS
     # using standard tip definition despite actually using filter tips
     # so that the tips can accommodate ~220µl per transfer for efficiency
+    if TIPS300 not in TIPS300_LW_DICT:
+        raise Exception('Invalid TIP300_LABWARE. Must be one of the \
+    following:\nbiotix\nopentrons')
+
+    if TIPS1000 not in TIPS1000_LW_DICT:
+        raise Exception('Invalid TIP1000_LABWARE. Must be one of the \
+    following:\nbiotix\nopentrons')
+
     if REUSE_TIPS == True:
         tips300 = [
             robot.load_labware(
-                'opentrons_96_tiprack_300ul', slot, '200µl filter tiprack')
+                TIPS300_LW_DICT[TIP300], slot, '300µl filter tiprack')
             for slot in ['8', '6', '2', '3']
         ]
         tipsreuse = [
@@ -571,18 +599,18 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
             for slot in ['7']
         ]
         tips1000 = [
-            robot.load_labware('opentrons_96_filtertiprack_1000ul', slot,
+            robot.load_labware(TIPS1000_LW_DICT[TIP1000], slot,
                              '1000µl filter tiprack')
             for slot in ['5']
         ]
     else:
         tips300 = [
         robot.load_labware(
-            'opentrons_96_tiprack_300ul', slot, '200µl filter tiprack')
+            TIPS300_LW_DICT[TIP300], slot, '300µl filter tiprack')
             for slot in ['2', '3', '5', '6', '9','4']
         ]
         tips1000 = [
-            robot.load_labware('opentrons_96_filtertiprack_1000ul', slot,
+            robot.load_labware(TIPS1000_LW_DICT[TIP1000], slot,
                              '1000µl filter tiprack')
             for slot in ['8']
         ]
