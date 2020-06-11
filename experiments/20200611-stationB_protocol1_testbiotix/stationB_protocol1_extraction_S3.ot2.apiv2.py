@@ -410,7 +410,7 @@ def wash_reuse(wash_sets,dests,waste,magdeck,pip,tiprack,tipreuse):
             tips_loc += 1
 
         magdeck.engage(height_from_base=MAGNET_HEIGHT)
-        robot.delay(seconds=75, msg='Incubating on magnet for 75 seconds.')
+        #robot.delay(seconds=75, msg='Incubating on magnet for 75 seconds.')
 
         wash_num += 1
 
@@ -447,7 +447,7 @@ def wash(wash_sets,dests,waste,magdeck,pip,tiprack):
             pip.flow_rate.dispense = dispense_default_speed
 
             magdeck.engage(height_from_base=MAGNET_HEIGHT)
-            robot.delay(seconds=75, msg='Incubating on magnet for 75 seconds.')
+            #robot.delay(seconds=75, msg='Incubating on magnet for 75 seconds.')
 
             # remove supernatant
             aspire_default_speed = pip.flow_rate.aspirate
@@ -473,9 +473,9 @@ def elute_samples_reuse(sources,dests,buffer,magdeck,pip,tipracks,tipreuse):
         tips_loc += 1
 
     ## Incubation steps
-    robot.delay(minutes=5, msg='Incubating off magnet for 5 minutes.')
+    #robot.delay(minutes=5, msg='Incubating off magnet for 5 minutes.')
     magdeck.engage(height_from_base=MAGNET_HEIGHT)
-    robot.delay(seconds=120, msg='Incubating on magnet for 120 seconds.')
+    #robot.delay(seconds=120, msg='Incubating on magnet for 120 seconds.')
 
     aspire_default_speed = pip.flow_rate.aspirate
     pip.flow_rate.aspirate = 50
@@ -505,9 +505,9 @@ def elute_samples(sources,dests,buffer,magdeck,pip,tipracks):
         drop(pip)
 
     ## Incubation steps
-    robot.delay(minutes=5, msg='Incubating off magnet for 5 minutes.')
+    #robot.delay(minutes=5, msg='Incubating off magnet for 5 minutes.')
     magdeck.engage(height_from_base=MAGNET_HEIGHT)
-    robot.delay(seconds=120, msg='Incubating on magnet for 120 seconds.')
+    #robot.delay(seconds=120, msg='Incubating on magnet for 120 seconds.')
 
     aspire_default_speed = pip.flow_rate.aspirate
     pip.flow_rate.aspirate = 50
@@ -646,16 +646,16 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
         ## bead dests depending on number of samples
         bead_dests = bead_buffer[:math.ceil(num_cols/4)]
         dispense_beads(7,bead_dests,mag_samples_m,m300,tips300)
-    else:
+    #else:
         # Mix bead
-        mix_beads(7, mag_samples_m,m300,tips300)
+        #mix_beads(7, mag_samples_m,m300,tips300)
 
     # incubate off the magnet
-    robot.delay(minutes=10, msg='Incubating off magnet for 10 minutes.')
+    #robot.delay(minutes=10, msg='Incubating off magnet for 10 minutes.')
 
     ## First incubate on magnet.
     magdeck.engage(height_from_base=MAGNET_HEIGHT)
-    robot.delay(minutes=7, msg='Incubating on magnet for 7 minutes.')
+    #robot.delay(minutes=7, msg='Incubating on magnet for 7 minutes.')
 
     # empty trash
     if NUM_SAMPLES >= 48:
