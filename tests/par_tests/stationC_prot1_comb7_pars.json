@@ -6,6 +6,7 @@
   "ELUTION_LABWARE" : "covidwarriors aluminum 1.5ml tubes",
   "PREPARE_MASTERMIX" : "False",
   "MM_TYPE" : "MM1",
+  "TIPS300": "opentrons",
   "VOLUME_ELUTION" : 7,
   "TRANSFER_MASTERMIX" : "True",
   "TRANSFER_SAMPLES" : "True",

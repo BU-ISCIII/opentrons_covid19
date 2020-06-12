@@ -4,6 +4,7 @@
   "PLATE_LABWARE" : "opentrons deep generic well plate",
   "VOLUME_BEADS" : 410,
   "DILUTE_BEADS" : "True",
+  "TIPS1000": "opentrons",
   "LANGUAGE" : "esp",
   "RESET_TIPCOUNT" : "False",
   "PROTOCOL_ID" : "0000-AA",

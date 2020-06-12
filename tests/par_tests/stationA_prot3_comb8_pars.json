@@ -4,6 +4,7 @@
   "PLATE_LABWARE" : "ecogen deep generic well plate",
   "VOLUME_LYSATE" : 400,
   "BEADS" : "True",
+  "TIPS1000": "opentrons",
   "LANGUAGE" : "eng",
   "RESET_TIPCOUNT" : "True",
   "PROTOCOL_ID" : "0000-AA",

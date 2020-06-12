@@ -6,6 +6,7 @@
   "ELUTION_LABWARE" : "opentrons aluminum nest plate",
   "PREPARE_MASTERMIX" : "False",
   "MM_TYPE" : "MM1",
+  "TIPS300": "opentrons",
   "VOLUME_ELUTION" : 7,
   "TRANSFER_MASTERMIX" : "False",
   "TRANSFER_SAMPLES" : "True",
