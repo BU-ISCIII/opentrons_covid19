@@ -370,7 +370,7 @@ def remove_supernatant(sources,waste,pip,tiprack):
     for i, m in enumerate(sources):
         loc = m.bottom(1.5)
         pick_up(pip,tiprack)
-        pip.transfer(850, loc, waste, air_gap=100, new_tip='never')
+        pip.transfer(850, loc, waste.top(1), air_gap=100, new_tip='never')
         pip.blow_out(waste)
         drop(pip)
 
@@ -421,7 +421,7 @@ def wash_reuse(wash_sets,dests,waste,magdeck,pip,tiprack,tipreuse):
             aspire_default_speed = pip.flow_rate.aspirate
             pip.flow_rate.aspirate = 75
             asp_loc = m.bottom(1.5)
-            pip.transfer(220, asp_loc, waste, new_tip='never', air_gap=20)
+            pip.transfer(220, asp_loc, waste.top(1), new_tip='never', air_gap=20)
             pip.flow_rate.aspirate = aspire_default_speed
             pip.blow_out(waste)
             pip.aspirate(10,waste)
@@ -453,7 +453,7 @@ def wash(wash_sets,dests,waste,magdeck,pip,tiprack):
             aspire_default_speed = pip.flow_rate.aspirate
             pip.flow_rate.aspirate = 75
             asp_loc = m.bottom(1.5)
-            pip.transfer(220, asp_loc, waste, new_tip='never', air_gap=10)
+            pip.transfer(220, asp_loc, waste.top(1), new_tip='never', air_gap=10)
             pip.flow_rate.aspirate = aspire_default_speed
             pip.blow_out(waste)
             drop(pip)
