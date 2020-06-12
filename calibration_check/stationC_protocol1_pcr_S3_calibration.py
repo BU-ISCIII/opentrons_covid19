@@ -25,6 +25,7 @@ MMTUBE_LABWARE = '2ml tubes'
 PCR_LABWARE = 'opentrons aluminum nest plate'
 ELUTION_LABWARE = 'opentrons aluminum nest plate'
 PREPARE_MASTERMIX = True
+TIPS300 = 'biotix'
 MM_TYPE = 'MM1'
 VOLUME_ELUTION = 7
 TRANSFER_MASTERMIX = True
@@ -47,6 +48,10 @@ tip_log['max'] = {}
 
 """
 NUM_SAMPLES is the number of samples, must be an integer number
+
+TIPS 300
+    biotix
+    opentrons
 
 MM_LABWARE must be one of the following:
     opentrons plastic block
@@ -97,6 +102,11 @@ else:
     VOLUME_MMIX = 20
 
 # Constants
+TIPS300_LW_DICT = {
+    'biotix': 'biotix_96_tiprack_300ul_flat',
+    'opentrons': 'opentrons_96_tiprack_300ul'
+}
+
 MM_LW_DICT = {
     'opentrons plastic block': 'opentrons_24_tuberack_generic_2ml_screwcap',
     'opentrons aluminum block': 'opentrons_24_aluminumblock_generic_2ml_screwcap',
@@ -433,8 +443,11 @@ def run(ctx: protocol_api.ProtocolContext):
         robot.load_labware('opentrons_96_filtertiprack_20ul', slot)
         for slot in ['6', '9', '8', '7']
     ]
-    tips300 = [robot.load_labware('opentrons_96_filtertiprack_200ul', '3')]
-
+    tips300 = [
+        robot.load_labware(
+            TIPS300_LW_DICT[TIPS300], slot, '300µl filter tiprack')
+        for slot in ['3']
+    ]
     # define pipettes
     p20 = robot.load_instrument('p20_single_gen2', 'right', tip_racks=tips20)
     p300 = robot.load_instrument('p300_single_gen2', 'left', tip_racks=tips300)

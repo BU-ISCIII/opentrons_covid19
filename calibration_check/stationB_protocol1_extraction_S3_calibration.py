@@ -38,6 +38,8 @@ NUM_SAMPLES = 96
 REAGENT_LABWARE = 'nest 12 reservoir plate'
 MAGPLATE_LABWARE = 'nest deep generic well plate'
 WASTE_LABWARE = 'nest 1 reservoir plate'
+TIPS300 = 'biotix'
+TIPS1000 = 'biotix'
 ELUTION_LABWARE = 'opentrons aluminum nest plate'
 DISPENSE_BEADS = False
 LANGUAGE = 'esp'
@@ -58,6 +60,14 @@ tip_log['max'] = {}
 
 """
 NUM_SAMPLES is the number of samples, must be an integer number
+
+TIPS 300
+    biotix
+    opentrons
+
+TIPS 1000
+    biotix
+    opentrons
 
 REAGENT_LABWARE must be one of the following:
     nest 12 reservoir plate
@@ -94,6 +104,15 @@ ACTION = "StationB-protocol1-extraction"
 PROTOCOL_ID = "0000-AA"
 
 # Constants
+TIPS300_LW_DICT = {
+    'biotix': 'biotix_96_tiprack_300ul_flat',
+    'opentrons': 'opentrons_96_tiprack_300ul'
+}
+
+TIPS1000_LW_DICT = {
+    'biotix': 'biotix_96_tiprack_1000ul',
+    'opentrons': 'opentrons_96_tiprack_1000ul'
+}
 REAGENT_LW_DICT = {
     'nest 12 reservoir plate': 'nest_12_reservoir_15ml'
 }
@@ -392,16 +411,33 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
     ## TIPS
     # using standard tip definition despite actually using filter tips
     # so that the tips can accommodate ~220µl per transfer for efficiency
-    tips300 = [
+    if REUSE_TIPS == True:
+        tips300 = [
+            robot.load_labware(
+                TIPS300_LW_DICT[TIPS300], slot, '300µl filter tiprack')
+            for slot in ['8', '6', '2', '3']
+        ]
+        tipsreuse = [
+            robot.load_labware(
+                'opentrons_96_tiprack_300ul', slot, '200µl filter tiprack')
+            for slot in ['7']
+        ]
+        tips1000 = [
+            robot.load_labware(TIPS1000_LW_DICT[TIPS1000], slot,
+                             '1000µl filter tiprack')
+            for slot in ['5']
+        ]
+    else:
+        tips300 = [
         robot.load_labware(
-            'opentrons_96_tiprack_300ul', slot, '200µl filter tiprack')
-        for slot in ['2', '3', '5', '6', '9','4']
-    ]
-    tips1000 = [
-        robot.load_labware('opentrons_96_filtertiprack_1000ul', slot,
-                         '1000µl filter tiprack')
-        for slot in ['8']
-    ]
+            TIPS300_LW_DICT[TIPS300], slot, '300µl filter tiprack')
+            for slot in ['2', '3', '5', '6', '9','4']
+        ]
+        tips1000 = [
+            robot.load_labware(TIPS1000_LW_DICT[TIPS1000], slot,
+                             '1000µl filter tiprack')
+            for slot in ['8']
+        ]
 
     # reagents and samples
     num_cols = math.ceil(NUM_SAMPLES/8)

@@ -23,6 +23,7 @@ NUM_SAMPLES = 96
 BUFFER_LABWARE = 'opentrons plastic 30ml tubes'
 DESTINATION_LABWARE = 'opentrons plastic 2ml tubes'
 DEST_TUBE = '2ml tubes'
+TIPS1000 = 'biotix'
 VOLUME_BUFFER = 300
 LANGUAGE = 'esp'
 RESET_TIPCOUNT = False
@@ -43,6 +44,10 @@ tip_log['max'] = {}
 """
 NUM_SAMPLES is the number of samples, must be an integer number
 
+TIPS 1000
+    biotix
+    opentrons
+
 BUFFER_LABWARE must be one of the following:
     opentrons plastic 50ml tubes
     opentrons plastic 30ml tubes
@@ -56,6 +61,10 @@ DEST_TUBE
 
 
 # Constants
+TIPS1000_LW_DICT = {
+    'biotix': 'biotix_96_tiprack_1000ul',
+    'opentrons': 'opentrons_96_tiprack_1000ul'
+}
 BUFFER_LW_DICT = {
     'opentrons plastic 50ml tubes': 'opentrons_6_tuberack_falcon_50ml_conical',
     'opentrons plastic 30ml tubes': 'opentrons_6_tuberack_generic_30ml_conical'
@@ -221,8 +230,11 @@ def run(ctx: protocol_api.ProtocolContext):
         reset_tipcount()
 
     # define tips
-    tips1000 = [robot.load_labware('opentrons_96_filtertiprack_1000ul',
-                                     3, '1000µl tiprack')]
+    tips1000 = [
+        robot.load_labware(TIPS1000_LW_DICT[TIPS1000], slot,
+                         '1000µl filter tiprack')
+        for slot in ['3']
+    ]
 
     # define pipettes
     p1000 = robot.load_instrument('p1000_single_gen2', 'left', tip_racks=tips1000)

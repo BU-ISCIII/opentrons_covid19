@@ -22,6 +22,7 @@ NUM_SAMPLES = 96
 BEADS_LABWARE = 'opentrons plastic 30ml tubes'
 PLATE_LABWARE = 'nest deep generic well plate'
 VOLUME_BEADS = 410
+TIPS1000 = 'biotix'
 DILUTE_BEADS = True
 LANGUAGE = 'esp'
 RESET_TIPCOUNT = False
@@ -42,6 +43,10 @@ tip_log['max'] = {}
 """
 NUM_SAMPLES is the number of samples, must be an integer number
 
+TIPS 1000
+    biotix
+    opentrons
+
 BEADS_LABWARE must be one of the following:
     opentrons plastic 50 ml tubes
     opentrons plastic 30ml tubes
@@ -51,6 +56,11 @@ PLATE_LABWARE must be one of the following:
     nest deep generic well plate
     vwr deep generic well plate
 """
+
+TIPS1000_LW_DICT = {
+    'biotix': 'biotix_96_tiprack_1000ul',
+    'opentrons': 'opentrons_96_tiprack_1000ul'
+}
 
 BD_LW_DICT = {
     'opentrons plastic 50 ml tubes': 'opentrons_6_tuberack_falcon_50ml_conical',
@@ -241,8 +251,11 @@ def run(ctx: protocol_api.ProtocolContext):
         reset_tipcount()
 
     # load tips
-    tips1000 = [robot.load_labware('opentrons_96_filtertiprack_1000ul',
-                                     3, '1000µl tiprack')]
+    tips1000 = [
+        robot.load_labware(TIPS1000_LW_DICT[TIPS1000], slot,
+                         '1000µl filter tiprack')
+        for slot in ['3']
+    ]
 
     # load pipette
     p1000 = robot.load_instrument(
