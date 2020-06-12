@@ -41,6 +41,7 @@ WASTE_LABWARE = 'nest 1 reservoir plate'
 TIPS300 = 'biotix'
 TIPS1000 = 'biotix'
 ELUTION_LABWARE = 'opentrons aluminum nest plate'
+REUSE_TIPS = "False"
 DISPENSE_BEADS = False
 LANGUAGE = 'esp'
 RESET_TIPCOUNT = False
