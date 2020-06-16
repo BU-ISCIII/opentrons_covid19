@@ -549,7 +549,7 @@ def run(ctx: protocol_api.ProtocolContext):
     following:\nbiotix\nopentrons')
 
     tips20 = [robot.load_labware('opentrons_96_filtertiprack_20ul', '6')]
-    tips300 = [robot.load_labware(TIPS300_LW_DICT[TIP300], '3')]
+    tips300 = [robot.load_labware(TIPS300_LW_DICT[TIPS300], '3')]
 
     # define pipettes
     p20 = robot.load_instrument('p20_single_gen2', 'right', tip_racks=tips20)

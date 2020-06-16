@@ -595,7 +595,7 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
     if REUSE_TIPS == True:
         tips300 = [
             robot.load_labware(
-                TIPS300_LW_DICT[TIP300], slot, '300µl filter tiprack')
+                TIPS300_LW_DICT[TIPS300], slot, '300µl filter tiprack')
             for slot in ['8', '6', '2', '3']
         ]
         tipsreuse = [
@@ -604,18 +604,18 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
             for slot in ['7']
         ]
         tips1000 = [
-            robot.load_labware(TIPS1000_LW_DICT[TIP1000], slot,
+            robot.load_labware(TIPS1000_LW_DICT[TIPS1000], slot,
                              '1000µl filter tiprack')
             for slot in ['5']
         ]
     else:
         tips300 = [
         robot.load_labware(
-            TIPS300_LW_DICT[TIP300], slot, '300µl filter tiprack')
+            TIPS300_LW_DICT[TIPS300], slot, '300µl filter tiprack')
             for slot in ['2', '3', '5', '6', '9','4']
         ]
         tips1000 = [
-            robot.load_labware(TIPS1000_LW_DICT[TIP1000], slot,
+            robot.load_labware(TIPS1000_LW_DICT[TIPS1000], slot,
                              '1000µl filter tiprack')
             for slot in ['8']
         ]

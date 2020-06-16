@@ -327,7 +327,7 @@ def run(ctx: protocol_api.ProtocolContext):
         raise Exception('Invalid TIP1000_LABWARE. Must be one of the \
     following:\nbiotix\nopentrons')
 
-    tips1000 = [robot.load_labware(TIPS300_LW_DICT[TIP300],
+    tips1000 = [robot.load_labware(TIPS1000_LW_DICT[TIPS1000],
                                      3, '1000µl tiprack')]
 
     # load pipette
