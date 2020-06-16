@@ -77,6 +77,7 @@ TIPS 1000
 
 REAGENT_LABWARE must be one of the following:
     nest 12 reservoir plate
+    agilent 12 reservoir plate
 
 MAGPLATE_LABWARE must be one of the following:
     opentrons deep generic well plate
@@ -86,6 +87,7 @@ MAGPLATE_LABWARE must be one of the following:
 
 WASTE labware
     nest 1 reservoir plate
+    agilent 1 reservoir plate
 
 ELUTION_LABWARE
     opentrons aluminum biorad plate
@@ -117,7 +119,8 @@ TIPS1000_LW_DICT = {
 }
 
 REAGENT_LW_DICT = {
-    'nest 12 reservoir plate': 'nest_12_reservoir_15ml'
+    'nest 12 reservoir plate': 'nest_12_reservoir_15ml',
+    'agilent 12 reservoir plate': 'agilent_12_reservoir_21000ul'
 }
 
 MAGPLATE_LW_DICT = {
@@ -129,7 +132,8 @@ MAGPLATE_LW_DICT = {
 
 WASTE_LW_DICT = {
     # Radius of each possible tube
-    'nest 1 reservoir plate': 'nest_1_reservoir_195ml'
+    'nest 1 reservoir plate': 'nest_1_reservoir_195ml',
+    'agilent 1 reservoir plate': 'agilent_1_reservoir_300000ul'
 }
 
 ELUTION_LW_DICT = {
