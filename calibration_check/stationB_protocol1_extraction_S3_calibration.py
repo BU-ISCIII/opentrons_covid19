@@ -94,7 +94,7 @@ ELUTION_LABWARE
 if MAGPLATE_LABWARE == 'nest deep generic well plate':
     MAGNET_HEIGHT = 22
 elif MAGPLATE_LABWARE == 'vwr deep generic well plate':
-    MAGNET_HEIGHT = 22
+    MAGNET_HEIGHT = 23
 elif MAGPLATE_LABWARE == 'ecogen deep generic well plate':
     MAGNET_HEIGHT = 21
 else:
