@@ -92,6 +92,7 @@ WASTE labware
 ELUTION_LABWARE
     opentrons aluminum biorad plate
     opentrons aluminum nest plate
+    opentrons aluminum axygen plate
 """
 
 # Calculated variables
@@ -138,7 +139,8 @@ WASTE_LW_DICT = {
 
 ELUTION_LW_DICT = {
     'opentrons aluminum biorad plate': 'opentrons_96_aluminumblock_biorad_wellplate_200ul',
-    'opentrons aluminum nest plate': 'opentrons_96_aluminumblock_nest_wellplate_100ul'
+    'opentrons aluminum nest plate': 'opentrons_96_aluminumblock_nest_wellplate_100ul',
+    'opentrons aluminum axygen plate': 'opentrons_96_aluminumblock_axygen_wellplate_200ul'
 
 }
 
