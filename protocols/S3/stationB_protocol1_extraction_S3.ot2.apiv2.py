@@ -427,7 +427,7 @@ def wash_reuse(wash_sets,dests,waste,magdeck,pip,tiprack,tipreuse):
             aspire_default_speed = pip.flow_rate.aspirate
             pip.flow_rate.aspirate = 75
             asp_loc = m.bottom(1.5)
-            pip.transfer(220, asp_loc, waste, new_tip='never', air_gap=20)
+            pip.transfer(210, asp_loc, waste, new_tip='never', air_gap=10)
             pip.flow_rate.aspirate = aspire_default_speed
             pip.blow_out(waste)
             pip.aspirate(10,waste)
@@ -459,7 +459,7 @@ def wash(wash_sets,dests,waste,magdeck,pip,tiprack):
             aspire_default_speed = pip.flow_rate.aspirate
             pip.flow_rate.aspirate = 75
             asp_loc = m.bottom(1.5)
-            pip.transfer(220, asp_loc, waste, new_tip='never', air_gap=10)
+            pip.transfer(210, asp_loc, waste, new_tip='never', air_gap=10)
             pip.flow_rate.aspirate = aspire_default_speed
             pip.blow_out(waste)
             drop(pip)
