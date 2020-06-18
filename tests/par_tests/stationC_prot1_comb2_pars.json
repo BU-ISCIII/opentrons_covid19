@@ -5,6 +5,7 @@
   "PCR_LABWARE" : "opentrons aluminum nest plate",
   "ELUTION_LABWARE" : "opentrons aluminum nest plate",
   "PREPARE_MASTERMIX" : "False",
+  "TIPS300": "opentrons",
   "MM_TYPE" : "MM1",
   "VOLUME_ELUTION" : 7,
   "TRANSFER_MASTERMIX" : "True",

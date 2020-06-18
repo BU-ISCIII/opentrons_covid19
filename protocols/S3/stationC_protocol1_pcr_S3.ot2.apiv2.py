@@ -36,6 +36,7 @@ VOLUME_ELUTION = 7
 TRANSFER_MASTERMIX = True
 TRANSFER_SAMPLES = True
 LANGUAGE = 'esp'
+TIPS300 = 'opentrons'
 RESET_TIPCOUNT = False
 PROTOCOL_ID = "0000-AA"
 URL = 'localhost'
@@ -56,6 +57,10 @@ tip_log['max'] = {}
 """
 NUM_SAMPLES is the number of samples, must be an integer number
 
+TIPS 300
+    biotix
+    opentrons
+
 MM_LABWARE must be one of the following:
     opentrons plastic block
     opentrons aluminum block
@@ -67,6 +72,7 @@ MMTUBE_LABWARE must be one of the following:
 PCR_LABWARE must be one of the following:
     opentrons aluminum biorad plate
     opentrons aluminum nest plate
+    opentrons aluminum axygen plate
     opentrons aluminum strip short
     covidwarriors aluminum biorad plate
     covidwarriors aluminum biorad strip short
@@ -80,6 +86,7 @@ ELUTION_LABWARE must be one of the following:
     covidwarriors aluminum 1.5ml tubes
     opentrons aluminum biorad plate
     opentrons aluminum nest plate
+    opentrons aluminum axygen plate
     covidwarriors aluminum biorad plate
     opentrons aluminum strip alpha
     opentrons aluminum strip short
@@ -105,6 +112,11 @@ else:
     VOLUME_MMIX = 20
 
 # Constants
+TIPS300_LW_DICT = {
+    'biotix': 'Biotix 96 Filter Tip Rack 300 µL',
+    'opentrons': 'opentrons_96_tiprack_300ul'
+}
+
 MM_LW_DICT = {
     'opentrons plastic block': 'opentrons_24_tuberack_generic_2ml_screwcap',
     'opentrons aluminum block': 'opentrons_24_aluminumblock_generic_2ml_screwcap',
@@ -114,6 +126,7 @@ MM_LW_DICT = {
 PCR_LW_DICT = {
     'opentrons aluminum biorad plate': 'opentrons_96_aluminumblock_biorad_wellplate_200ul',
     'opentrons aluminum nest plate': 'opentrons_96_aluminumblock_nest_wellplate_100ul',
+    'opentrons aluminum axygen plate': 'opentrons_96_aluminumblock_axygen_wellplate_200ul',
     'opentrons aluminum strip short': 'opentrons_aluminumblock_96_pcrstrips_100ul',
     'covidwarriors aluminum biorad plate': 'covidwarriors_aluminumblock_96_bioradwellplate_200ul',
     'covidwarriors aluminum biorad strip short': 'covidwarriors_aluminumblock_96_bioradwellplate_pcrstrips_100ul'
@@ -130,6 +143,7 @@ EL_LW_DICT = {
     # PCR plate
     'opentrons aluminum biorad plate': 'opentrons_96_aluminumblock_biorad_wellplate_200ul',
     'opentrons aluminum nest plate': 'opentrons_96_aluminumblock_nest_wellplate_100ul',
+    'opentrons aluminum axygen plate': 'opentrons_96_aluminumblock_axygen_wellplate_200ul',
     'covidwarriors aluminum biorad plate': 'covidwarriors_aluminumblock_96_bioradwellplate_200ul',
     # Strips
     #'large strips': 'opentrons_96_aluminumblock_generic_pcr_strip_200ul',
@@ -534,8 +548,12 @@ def run(ctx: protocol_api.ProtocolContext):
     start_time = start_run()
 
     # define tips
+    if TIPS300 not in TIPS300_LW_DICT:
+        raise Exception('Invalid TIP300_LABWARE. Must be one of the \
+    following:\nbiotix\nopentrons')
+
     tips20 = [robot.load_labware('opentrons_96_filtertiprack_20ul', '6')]
-    tips300 = [robot.load_labware('opentrons_96_filtertiprack_200ul', '3')]
+    tips300 = [robot.load_labware(TIPS300_LW_DICT[TIPS300], '3')]
 
     # define pipettes
     p20 = robot.load_instrument('p20_single_gen2', 'right', tip_racks=tips20)

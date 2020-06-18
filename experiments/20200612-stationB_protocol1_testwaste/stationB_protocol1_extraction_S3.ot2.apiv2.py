@@ -77,7 +77,6 @@ TIPS 1000
 
 REAGENT_LABWARE must be one of the following:
     nest 12 reservoir plate
-    agilent 12 reservoir plate
 
 MAGPLATE_LABWARE must be one of the following:
     opentrons deep generic well plate
@@ -87,19 +86,17 @@ MAGPLATE_LABWARE must be one of the following:
 
 WASTE labware
     nest 1 reservoir plate
-    agilent 1 reservoir plate
 
 ELUTION_LABWARE
     opentrons aluminum biorad plate
     opentrons aluminum nest plate
-    opentrons aluminum axygen plate
 """
 
 # Calculated variables
 if MAGPLATE_LABWARE == 'nest deep generic well plate':
     MAGNET_HEIGHT = 22
 elif MAGPLATE_LABWARE == 'vwr deep generic well plate':
-    MAGNET_HEIGHT = 23
+    MAGNET_HEIGHT = 22
 elif MAGPLATE_LABWARE == 'ecogen deep generic well plate':
     MAGNET_HEIGHT = 21
 else:
@@ -120,8 +117,7 @@ TIPS1000_LW_DICT = {
 }
 
 REAGENT_LW_DICT = {
-    'nest 12 reservoir plate': 'nest_12_reservoir_15ml',
-    'agilent 12 reservoir plate': 'agilent_12_reservoir_21000ul'
+    'nest 12 reservoir plate': 'nest_12_reservoir_15ml'
 }
 
 MAGPLATE_LW_DICT = {
@@ -133,14 +129,12 @@ MAGPLATE_LW_DICT = {
 
 WASTE_LW_DICT = {
     # Radius of each possible tube
-    'nest 1 reservoir plate': 'nest_1_reservoir_195ml',
-    'agilent 1 reservoir plate': 'agilent_1_reservoir_300000ul'
+    'nest 1 reservoir plate': 'nest_1_reservoir_195ml'
 }
 
 ELUTION_LW_DICT = {
     'opentrons aluminum biorad plate': 'opentrons_96_aluminumblock_biorad_wellplate_200ul',
-    'opentrons aluminum nest plate': 'opentrons_96_aluminumblock_nest_wellplate_100ul',
-    'opentrons aluminum axygen plate': 'opentrons_96_aluminumblock_axygen_wellplate_200ul'
+    'opentrons aluminum nest plate': 'opentrons_96_aluminumblock_nest_wellplate_100ul'
 
 }
 
@@ -376,7 +370,7 @@ def remove_supernatant(sources,waste,pip,tiprack):
     for i, m in enumerate(sources):
         loc = m.bottom(1.5)
         pick_up(pip,tiprack)
-        pip.transfer(850, loc, waste, air_gap=100, new_tip='never')
+        pip.transfer(850, loc, waste.top(1), air_gap=100, new_tip='never')
         pip.blow_out(waste)
         drop(pip)
 
@@ -427,7 +421,7 @@ def wash_reuse(wash_sets,dests,waste,magdeck,pip,tiprack,tipreuse):
             aspire_default_speed = pip.flow_rate.aspirate
             pip.flow_rate.aspirate = 75
             asp_loc = m.bottom(1.5)
-            pip.transfer(210, asp_loc, waste, new_tip='never', air_gap=10)
+            pip.transfer(220, asp_loc, waste.top(1), new_tip='never', air_gap=20)
             pip.flow_rate.aspirate = aspire_default_speed
             pip.blow_out(waste)
             pip.aspirate(10,waste)
@@ -459,7 +453,7 @@ def wash(wash_sets,dests,waste,magdeck,pip,tiprack):
             aspire_default_speed = pip.flow_rate.aspirate
             pip.flow_rate.aspirate = 75
             asp_loc = m.bottom(1.5)
-            pip.transfer(210, asp_loc, waste, new_tip='never', air_gap=10)
+            pip.transfer(220, asp_loc, waste.top(1), new_tip='never', air_gap=10)
             pip.flow_rate.aspirate = aspire_default_speed
             pip.blow_out(waste)
             drop(pip)
@@ -569,7 +563,7 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
     following:\nnest 1 reservoir plate')
 
     waste = robot.load_labware(
-        WASTE_LW_DICT[WASTE_LABWARE], '11', 'waste reservoir').wells()[0].top(1)
+        WASTE_LW_DICT[WASTE_LABWARE], '11', 'waste reservoir').wells()[0].top(-10)
 
     ## REAGENT RESERVOIR
     if REAGENT_LABWARE not in REAGENT_LW_DICT:
@@ -597,7 +591,7 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
     if REUSE_TIPS == True:
         tips300 = [
             robot.load_labware(
-                TIPS300_LW_DICT[TIPS300], slot, '300µl filter tiprack')
+                TIPS300_LW_DICT[TIP300], slot, '300µl filter tiprack')
             for slot in ['8', '6', '2', '3']
         ]
         tipsreuse = [
@@ -606,18 +600,18 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
             for slot in ['7']
         ]
         tips1000 = [
-            robot.load_labware(TIPS1000_LW_DICT[TIPS1000], slot,
+            robot.load_labware(TIPS1000_LW_DICT[TIP1000], slot,
                              '1000µl filter tiprack')
             for slot in ['5']
         ]
     else:
         tips300 = [
         robot.load_labware(
-            TIPS300_LW_DICT[TIPS300], slot, '300µl filter tiprack')
+            TIPS300_LW_DICT[TIP300], slot, '300µl filter tiprack')
             for slot in ['2', '3', '5', '6', '9','4']
         ]
         tips1000 = [
-            robot.load_labware(TIPS1000_LW_DICT[TIPS1000], slot,
+            robot.load_labware(TIPS1000_LW_DICT[TIP1000], slot,
                              '1000µl filter tiprack')
             for slot in ['8']
         ]
@@ -656,12 +650,6 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
         # Mix bead
         mix_beads(7, mag_samples_m,m300,tips300)
 
-    # empty trash
-    if NUM_SAMPLES >= 48:
-        voice_notification('empty_trash')
-        robot.pause(f"Please, empty trash")
-        confirm_door_is_closed()
-        
     # incubate off the magnet
     robot.delay(minutes=10, msg='Incubating off magnet for 10 minutes.')
 
@@ -669,7 +657,11 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
     magdeck.engage(height_from_base=MAGNET_HEIGHT)
     robot.delay(minutes=7, msg='Incubating on magnet for 7 minutes.')
 
-
+    # empty trash
+    if NUM_SAMPLES >= 48:
+        voice_notification('empty_trash')
+        robot.pause(f"Please, empty trash")
+        confirm_door_is_closed()
 
     # remove supernatant with P1000
     remove_supernatant(mag_samples_s,waste,p1000,tips1000)

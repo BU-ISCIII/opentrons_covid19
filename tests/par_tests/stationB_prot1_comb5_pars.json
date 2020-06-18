@@ -5,6 +5,8 @@
   "WASTE_LABWARE" : "nest 1 reservoir plate",
   "ELUTION_LABWARE" : "opentrons aluminum biorad plate",
   "DISPENSE_BEADS" : "False",
+  "TIPS1000": "opentrons",
+  "TIPS300": "opentrons",
   "LANGUAGE" : "esp",
   "RESET_TIPCOUNT" : "False",
   "REUSE_TIPS" : "False",

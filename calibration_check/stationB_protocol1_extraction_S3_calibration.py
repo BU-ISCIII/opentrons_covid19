@@ -38,10 +38,13 @@ NUM_SAMPLES = 96
 REAGENT_LABWARE = 'nest 12 reservoir plate'
 MAGPLATE_LABWARE = 'nest deep generic well plate'
 WASTE_LABWARE = 'nest 1 reservoir plate'
+TIPS300 = 'opentrons'
+TIPS1000 = 'opentrons'
 ELUTION_LABWARE = 'opentrons aluminum nest plate'
+REUSE_TIPS = "False"
 DISPENSE_BEADS = False
 LANGUAGE = 'esp'
-RESET_TIPCOUNT = False
+RESET_TIPCOUNT = True
 
 # End Parameters to adapt the protocol
 
@@ -58,6 +61,14 @@ tip_log['max'] = {}
 
 """
 NUM_SAMPLES is the number of samples, must be an integer number
+
+TIPS 300
+    biotix
+    opentrons
+
+TIPS 1000
+    biotix
+    opentrons
 
 REAGENT_LABWARE must be one of the following:
     nest 12 reservoir plate
@@ -82,18 +93,31 @@ ELUTION_LABWARE
 # Calculated variables
 if MAGPLATE_LABWARE == 'nest deep generic well plate':
     MAGNET_HEIGHT = 22
+    ASPIRATE_HEIGHT= 1.5
 elif MAGPLATE_LABWARE == 'vwr deep generic well plate':
-    MAGNET_HEIGHT = 22
+    MAGNET_HEIGHT = 23
+    ASPIRATE_HEIGHT= 1.5
 elif MAGPLATE_LABWARE == 'ecogen deep generic well plate':
     MAGNET_HEIGHT = 21
+    ASPIRATE_HEIGHT= 1.5
 else:
     MAGNET_HEIGHT = 22
+    ASPIRATE_HEIGHT= 1.5
 
 # End Parameters to adapt the protocol
 ACTION = "StationB-protocol1-extraction"
 PROTOCOL_ID = "0000-AA"
 
 # Constants
+TIPS300_LW_DICT = {
+    'biotix': 'biotix_96_tiprack_300ul_flat',
+    'opentrons': 'opentrons_96_tiprack_300ul'
+}
+
+TIPS1000_LW_DICT = {
+    'biotix': 'biotix_96_tiprack_1000ul',
+    'opentrons': 'opentrons_96_tiprack_1000ul'
+}
 REAGENT_LW_DICT = {
     'nest 12 reservoir plate': 'nest_12_reservoir_15ml'
 }
@@ -379,7 +403,7 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
     following:\nnest 1 reservoir plate')
 
     waste = robot.load_labware(
-        WASTE_LW_DICT[WASTE_LABWARE], '11', 'waste reservoir').wells()[0].top(-10)
+        WASTE_LW_DICT[WASTE_LABWARE], '11', 'waste reservoir').wells()[0].top(1)
 
     ## REAGENT RESERVOIR
     if REAGENT_LABWARE not in REAGENT_LW_DICT:
@@ -392,16 +416,33 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
     ## TIPS
     # using standard tip definition despite actually using filter tips
     # so that the tips can accommodate ~220µl per transfer for efficiency
-    tips300 = [
+    if REUSE_TIPS == True:
+        tips300 = [
+            robot.load_labware(
+                TIPS300_LW_DICT[TIPS300], slot, '300µl filter tiprack')
+            for slot in ['8', '6', '2', '3']
+        ]
+        tipsreuse = [
+            robot.load_labware(
+                'opentrons_96_tiprack_300ul', slot, '200µl filter tiprack')
+            for slot in ['7']
+        ]
+        tips1000 = [
+            robot.load_labware(TIPS1000_LW_DICT[TIPS1000], slot,
+                             '1000µl filter tiprack')
+            for slot in ['5']
+        ]
+    else:
+        tips300 = [
         robot.load_labware(
-            'opentrons_96_tiprack_300ul', slot, '200µl filter tiprack')
-        for slot in ['2', '3', '5', '6', '9','4']
-    ]
-    tips1000 = [
-        robot.load_labware('opentrons_96_filtertiprack_1000ul', slot,
-                         '1000µl filter tiprack')
-        for slot in ['8']
-    ]
+            TIPS300_LW_DICT[TIPS300], slot, '300µl filter tiprack')
+            for slot in ['2', '3', '5', '6', '9','4']
+        ]
+        tips1000 = [
+            robot.load_labware(TIPS1000_LW_DICT[TIPS1000], slot,
+                             '1000µl filter tiprack')
+            for slot in ['8']
+        ]
 
     # reagents and samples
     num_cols = math.ceil(NUM_SAMPLES/8)
@@ -436,10 +477,10 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
     for position in [mag_samples_s[0], mag_samples_s[-1]]:
         p1000.move_to(position.top())
         robot.pause(f"Is it at the top of the well?")
-        p1000.aspirate(800, position.bottom(1))
+        p1000.aspirate(850, position.bottom(ASPIRATE_HEIGHT))
         p1000.move_to(position.top())
         robot.pause(f"Did it aspirate correctly?")
-        p1000.dispense(800, waste)
+        p1000.dispense(850, waste)
         p1000.move_to(waste)
         robot.pause(f"Did it dispense all the liquid?")
     drop(p1000)
@@ -458,19 +499,22 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
     m300.dispense(200, mag_samples_m[0].bottom(5))
     m300.move_to(mag_samples_m[0].top())
     robot.pause(f"Did it dispense all the liquid?")
-    m300.aspirate(200, mag_samples_m[0].bottom(1))
+    magdeck.engage(height_from_base=MAGNET_HEIGHT)
+    m300.aspirate(210, mag_samples_m[0].bottom(ASPIRATE_HEIGHT))
     m300.move_to(mag_samples_m[0].top())
     robot.pause(f"Did it aspirate correctly?")
     m300.move_to(mag_samples_m[-1].top())
     robot.pause(f"Is it at the top of the well?")
-    m300.dispense(200, mag_samples_m[-1].bottom(5))
+    magdeck.disengage()
+    m300.dispense(210, mag_samples_m[-1].bottom(5))
     m300.move_to(mag_samples_m[-1].top())
+    magdeck.engage(height_from_base=MAGNET_HEIGHT)
     robot.pause(f"Did it dispense all the liquid?")
-    m300.aspirate(200, mag_samples_m[-1].bottom(1))
+    m300.aspirate(210, mag_samples_m[-1].bottom(ASPIRATE_HEIGHT))
     m300.move_to(mag_samples_m[-1].top())
     robot.pause(f"Did it aspirate correctly?")
     # waste
-    m300.dispense(200, waste)
+    m300.dispense(210, waste)
     m300.move_to(waste)
     robot.pause(f"Did it dispense all the liquid?")
     drop(m300)

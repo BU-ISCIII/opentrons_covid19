@@ -38,17 +38,17 @@ REAGENT SETUP:
 # Warning writing any Parameters below this line.
 # It will be deleted if opentronsWeb is used.
 
-NUM_SAMPLES = 96
+NUM_SAMPLES = 24
 REAGENT_LABWARE = 'nest 12 reservoir plate'
 MAGPLATE_LABWARE = 'nest deep generic well plate'
 WASTE_LABWARE = 'nest 1 reservoir plate'
 ELUTION_LABWARE = 'opentrons aluminum nest plate'
 DISPENSE_BEADS = False
-TIPS300 = 'opentrons'
-TIPS1000 = 'opentrons'
-REUSE_TIPS = False
+TIPS300 = 'biotix'
+TIPS1000 = 'biotix'
+REUSE_TIPS = True
 LANGUAGE = 'esp'
-RESET_TIPCOUNT = True
+RESET_TIPCOUNT = False
 PROTOCOL_ID = "0000-AA"
 URL = 'localhost'
 # End Parameters to adapt the protocol
@@ -77,7 +77,6 @@ TIPS 1000
 
 REAGENT_LABWARE must be one of the following:
     nest 12 reservoir plate
-    agilent 12 reservoir plate
 
 MAGPLATE_LABWARE must be one of the following:
     opentrons deep generic well plate
@@ -87,19 +86,17 @@ MAGPLATE_LABWARE must be one of the following:
 
 WASTE labware
     nest 1 reservoir plate
-    agilent 1 reservoir plate
 
 ELUTION_LABWARE
     opentrons aluminum biorad plate
     opentrons aluminum nest plate
-    opentrons aluminum axygen plate
 """
 
 # Calculated variables
 if MAGPLATE_LABWARE == 'nest deep generic well plate':
     MAGNET_HEIGHT = 22
 elif MAGPLATE_LABWARE == 'vwr deep generic well plate':
-    MAGNET_HEIGHT = 23
+    MAGNET_HEIGHT = 22
 elif MAGPLATE_LABWARE == 'ecogen deep generic well plate':
     MAGNET_HEIGHT = 21
 else:
@@ -110,18 +107,17 @@ ACTION = "StationB-protocol1-extraction"
 
 # Constants
 TIPS300_LW_DICT = {
-    'biotix': 'Biotix 96 Filter Tip Rack 300 µL',
+    'biotix': 'biotix_96_tiprack_300ul_flat',
     'opentrons': 'opentrons_96_tiprack_300ul'
 }
 
 TIPS1000_LW_DICT = {
-    'biotix': 'Biotix 96 Filter Tip Rack 1000 µL',
+    'biotix': 'biotix_96_tiprack_1000ul',
     'opentrons': 'opentrons_96_tiprack_1000ul'
 }
 
 REAGENT_LW_DICT = {
-    'nest 12 reservoir plate': 'nest_12_reservoir_15ml',
-    'agilent 12 reservoir plate': 'agilent_12_reservoir_21000ul'
+    'nest 12 reservoir plate': 'nest_12_reservoir_15ml'
 }
 
 MAGPLATE_LW_DICT = {
@@ -133,14 +129,12 @@ MAGPLATE_LW_DICT = {
 
 WASTE_LW_DICT = {
     # Radius of each possible tube
-    'nest 1 reservoir plate': 'nest_1_reservoir_195ml',
-    'agilent 1 reservoir plate': 'agilent_1_reservoir_300000ul'
+    'nest 1 reservoir plate': 'nest_1_reservoir_195ml'
 }
 
 ELUTION_LW_DICT = {
     'opentrons aluminum biorad plate': 'opentrons_96_aluminumblock_biorad_wellplate_200ul',
-    'opentrons aluminum nest plate': 'opentrons_96_aluminumblock_nest_wellplate_100ul',
-    'opentrons aluminum axygen plate': 'opentrons_96_aluminumblock_axygen_wellplate_200ul'
+    'opentrons aluminum nest plate': 'opentrons_96_aluminumblock_nest_wellplate_100ul'
 
 }
 
@@ -416,7 +410,7 @@ def wash_reuse(wash_sets,dests,waste,magdeck,pip,tiprack,tipreuse):
             tips_loc += 1
 
         magdeck.engage(height_from_base=MAGNET_HEIGHT)
-        robot.delay(seconds=75, msg='Incubating on magnet for 75 seconds.')
+        #robot.delay(seconds=75, msg='Incubating on magnet for 75 seconds.')
 
         wash_num += 1
 
@@ -427,7 +421,7 @@ def wash_reuse(wash_sets,dests,waste,magdeck,pip,tiprack,tipreuse):
             aspire_default_speed = pip.flow_rate.aspirate
             pip.flow_rate.aspirate = 75
             asp_loc = m.bottom(1.5)
-            pip.transfer(210, asp_loc, waste, new_tip='never', air_gap=10)
+            pip.transfer(220, asp_loc, waste, new_tip='never', air_gap=20)
             pip.flow_rate.aspirate = aspire_default_speed
             pip.blow_out(waste)
             pip.aspirate(10,waste)
@@ -453,13 +447,13 @@ def wash(wash_sets,dests,waste,magdeck,pip,tiprack):
             pip.flow_rate.dispense = dispense_default_speed
 
             magdeck.engage(height_from_base=MAGNET_HEIGHT)
-            robot.delay(seconds=75, msg='Incubating on magnet for 75 seconds.')
+            #robot.delay(seconds=75, msg='Incubating on magnet for 75 seconds.')
 
             # remove supernatant
             aspire_default_speed = pip.flow_rate.aspirate
             pip.flow_rate.aspirate = 75
             asp_loc = m.bottom(1.5)
-            pip.transfer(210, asp_loc, waste, new_tip='never', air_gap=10)
+            pip.transfer(220, asp_loc, waste, new_tip='never', air_gap=10)
             pip.flow_rate.aspirate = aspire_default_speed
             pip.blow_out(waste)
             drop(pip)
@@ -479,9 +473,9 @@ def elute_samples_reuse(sources,dests,buffer,magdeck,pip,tipracks,tipreuse):
         tips_loc += 1
 
     ## Incubation steps
-    robot.delay(minutes=5, msg='Incubating off magnet for 5 minutes.')
+    #robot.delay(minutes=5, msg='Incubating off magnet for 5 minutes.')
     magdeck.engage(height_from_base=MAGNET_HEIGHT)
-    robot.delay(seconds=120, msg='Incubating on magnet for 120 seconds.')
+    #robot.delay(seconds=120, msg='Incubating on magnet for 120 seconds.')
 
     aspire_default_speed = pip.flow_rate.aspirate
     pip.flow_rate.aspirate = 50
@@ -511,9 +505,9 @@ def elute_samples(sources,dests,buffer,magdeck,pip,tipracks):
         drop(pip)
 
     ## Incubation steps
-    robot.delay(minutes=5, msg='Incubating off magnet for 5 minutes.')
+    #robot.delay(minutes=5, msg='Incubating off magnet for 5 minutes.')
     magdeck.engage(height_from_base=MAGNET_HEIGHT)
-    robot.delay(seconds=120, msg='Incubating on magnet for 120 seconds.')
+    #robot.delay(seconds=120, msg='Incubating on magnet for 120 seconds.')
 
     aspire_default_speed = pip.flow_rate.aspirate
     pip.flow_rate.aspirate = 50
@@ -569,7 +563,7 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
     following:\nnest 1 reservoir plate')
 
     waste = robot.load_labware(
-        WASTE_LW_DICT[WASTE_LABWARE], '11', 'waste reservoir').wells()[0].top(1)
+        WASTE_LW_DICT[WASTE_LABWARE], '11', 'waste reservoir').wells()[0].top(-10)
 
     ## REAGENT RESERVOIR
     if REAGENT_LABWARE not in REAGENT_LW_DICT:
@@ -652,24 +646,22 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
         ## bead dests depending on number of samples
         bead_dests = bead_buffer[:math.ceil(num_cols/4)]
         dispense_beads(7,bead_dests,mag_samples_m,m300,tips300)
-    else:
+    #else:
         # Mix bead
-        mix_beads(7, mag_samples_m,m300,tips300)
+        #mix_beads(7, mag_samples_m,m300,tips300)
+
+    # incubate off the magnet
+    #robot.delay(minutes=10, msg='Incubating off magnet for 10 minutes.')
+
+    ## First incubate on magnet.
+    magdeck.engage(height_from_base=MAGNET_HEIGHT)
+    #robot.delay(minutes=7, msg='Incubating on magnet for 7 minutes.')
 
     # empty trash
     if NUM_SAMPLES >= 48:
         voice_notification('empty_trash')
         robot.pause(f"Please, empty trash")
         confirm_door_is_closed()
-        
-    # incubate off the magnet
-    robot.delay(minutes=10, msg='Incubating off magnet for 10 minutes.')
-
-    ## First incubate on magnet.
-    magdeck.engage(height_from_base=MAGNET_HEIGHT)
-    robot.delay(minutes=7, msg='Incubating on magnet for 7 minutes.')
-
-
 
     # remove supernatant with P1000
     remove_supernatant(mag_samples_s,waste,p1000,tips1000)

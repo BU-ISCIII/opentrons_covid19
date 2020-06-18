@@ -3,6 +3,7 @@
   "LYSATE_LABWARE" : "opentrons plastic 2ml tubes",
   "PLATE_LABWARE" : "nest deep generic well plate",
   "VOLUME_LYSATE" : 400,
+  "TIPS1000": "opentrons",
   "BEADS" : "False",
   "LANGUAGE" : "esp",
   "RESET_TIPCOUNT" : "False",

@@ -31,6 +31,7 @@ DESTINATION_LABWARE = 'opentrons plastic 2ml tubes'
 DEST_TUBE = '2ml tubes'
 VOLUME_BUFFER = 300
 LANGUAGE = 'esp'
+TIPS1000 = 'opentrons'
 RESET_TIPCOUNT = False
 PROTOCOL_ID = "0000-AA"
 URL = 'localhost'
@@ -52,6 +53,10 @@ tip_log['max'] = {}
 """
 NUM_SAMPLES is the number of samples, must be an integer number
 
+TIPS 1000
+    biotix
+    opentrons
+
 BUFFER_LABWARE must be one of the following:
     opentrons plastic 50ml tubes
     opentrons plastic 30ml tubes
@@ -65,6 +70,12 @@ DEST_TUBE
 
 
 # Constants
+
+TIPS1000_LW_DICT = {
+    'biotix': 'Biotix 96 Filter Tip Rack 1000 µL',
+    'opentrons': 'opentrons_96_tiprack_1000ul'
+}
+
 BUFFER_LW_DICT = {
     'opentrons plastic 50ml tubes': 'opentrons_6_tuberack_falcon_50ml_conical',
     'opentrons plastic 30ml tubes': 'opentrons_6_tuberack_generic_30ml_conical'
@@ -307,7 +318,11 @@ def run(ctx: protocol_api.ProtocolContext):
     start_time = start_run()
 
     # define tips
-    tips1000 = [robot.load_labware('opentrons_96_filtertiprack_1000ul',
+    if TIPS1000 not in TIPS1000_LW_DICT:
+        raise Exception('Invalid TIP1000_LABWARE. Must be one of the \
+    following:\nbiotix\nopentrons')
+
+    tips1000 = [robot.load_labware(TIPS1000_LW_DICT[TIPS1000],
                                      3, '1000µl tiprack')]
 
     # define pipettes

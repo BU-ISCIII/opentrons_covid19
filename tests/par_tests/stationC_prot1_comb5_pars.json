@@ -7,6 +7,7 @@
   "PREPARE_MASTERMIX" : "False",
   "MM_TYPE" : "MM1",
   "VOLUME_ELUTION" : 7,
+  "TIPS300": "opentrons",
   "TRANSFER_MASTERMIX" : "True",
   "TRANSFER_SAMPLES" : "True",
   "LANGUAGE" : "esp",

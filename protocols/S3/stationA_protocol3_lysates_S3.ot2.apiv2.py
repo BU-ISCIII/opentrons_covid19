@@ -33,6 +33,7 @@ PLATE_LABWARE = 'nest deep generic well plate'
 VOLUME_LYSATE = 400
 BEADS = False
 LANGUAGE = 'esp'
+TIPS1000 = 'opentrons'
 RESET_TIPCOUNT = False
 PROTOCOL_ID = "0000-AA"
 URL = 'localhost'
@@ -56,6 +57,10 @@ tip_log['max'] = {}
 """
 NUM_SAMPLES is the number of samples, must be an integer number
 
+TIPS 1000
+    biotix
+    opentrons
+
 LYSATE_LABWARE must be one of the following:
     opentrons plastic 2ml tubes
 
@@ -65,6 +70,11 @@ PLATE_LABWARE must be one of the following:
     vwr deep generic well plate
     ecogen deep generic well plate
 """
+# Constants
+TIPS1000_LW_DICT = {
+    'biotix': 'Biotix 96 Filter Tip Rack 1000 µL',
+    'opentrons': 'opentrons_96_tiprack_1000ul'
+}
 
 LY_LW_DICT = {
     'opentrons plastic 2ml tubes': 'opentrons_24_tuberack_generic_2ml_screwcap'
@@ -311,7 +321,13 @@ def run(ctx: protocol_api.ProtocolContext):
     # Begin run
     start_time = start_run()
 
-    tips1000 = [robot.load_labware('opentrons_96_filtertiprack_1000ul',
+    ## TIPS
+
+    if TIPS1000 not in TIPS1000_LW_DICT:
+        raise Exception('Invalid TIP1000_LABWARE. Must be one of the \
+    following:\nbiotix\nopentrons')
+
+    tips1000 = [robot.load_labware(TIPS1000_LW_DICT[TIPS1000],
                                      3, '1000µl tiprack')]
 
     # load pipette

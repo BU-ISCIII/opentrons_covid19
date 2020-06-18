@@ -61,6 +61,7 @@ MM_LABWARE must be one of the following:
 PCR_LABWARE must be one of the following:
     opentrons aluminum biorad plate
     opentrons aluminum nest plate
+    opentrons aluminum axygen plate
     opentrons aluminum strip short
     covidwarriors aluminum biorad plate
     covidwarriors aluminum biorad strip short
@@ -74,6 +75,7 @@ ELUTION_LABWARE must be one of the following:
     covidwarriors aluminum 1.5ml tubes
     opentrons aluminum biorad plate
     opentrons aluminum nest plate
+    opentrons aluminum axygen plate
     covidwarriors aluminum biorad plate
     opentrons aluminum strip alpha
     opentrons aluminum strip short
@@ -92,6 +94,7 @@ MM_LW_DICT = {
 PCR_LW_DICT = {
     'opentrons aluminum biorad plate': 'opentrons_96_aluminumblock_biorad_wellplate_200ul',
     'opentrons aluminum nest plate': 'opentrons_96_aluminumblock_nest_wellplate_100ul',
+    'opentrons aluminum axygen plate': 'opentrons_96_aluminumblock_axygen_wellplate_200ul',
     'opentrons aluminum strip short': 'opentrons_aluminumblock_96_pcrstrips_100ul',
     'covidwarriors aluminum biorad plate': 'covidwarriors_aluminumblock_96_bioradwellplate_200ul',
     'covidwarriors aluminum biorad strip short': 'covidwarriors_aluminumblock_96_bioradwellplate_pcrstrips_100ul'
@@ -101,6 +104,7 @@ EL_LW_DICT = {
     # PCR plate
     'opentrons aluminum biorad plate': 'opentrons_96_aluminumblock_biorad_wellplate_200ul',
     'opentrons aluminum nest plate': 'opentrons_96_aluminumblock_nest_wellplate_100ul',
+    'opentrons aluminum axygen plate': 'opentrons_96_aluminumblock_axygen_wellplate_200ul',
     'covidwarriors aluminum biorad plate': 'covidwarriors_aluminumblock_96_bioradwellplate_200ul',
     # Strips
     #'large strips': 'opentrons_96_aluminumblock_generic_pcr_strip_200ul',
