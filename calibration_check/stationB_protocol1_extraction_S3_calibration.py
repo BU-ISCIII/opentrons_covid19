@@ -44,7 +44,7 @@ ELUTION_LABWARE = 'opentrons aluminum nest plate'
 REUSE_TIPS = "False"
 DISPENSE_BEADS = False
 LANGUAGE = 'esp'
-RESET_TIPCOUNT = False
+RESET_TIPCOUNT = True
 
 # End Parameters to adapt the protocol
 
@@ -399,7 +399,7 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
     following:\nnest 1 reservoir plate')
 
     waste = robot.load_labware(
-        WASTE_LW_DICT[WASTE_LABWARE], '11', 'waste reservoir').wells()[0].top(-10)
+        WASTE_LW_DICT[WASTE_LABWARE], '11', 'waste reservoir').wells()[0].top(1)
 
     ## REAGENT RESERVOIR
     if REAGENT_LABWARE not in REAGENT_LW_DICT:
