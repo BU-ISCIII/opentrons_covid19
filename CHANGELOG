@@ -1,3 +1,16 @@
+## Version 1.10
+
+New features:
+- New labware configuration: Biotix tips for 300 and 1000 configured in all protocols.
+- New labware configuration: axygen pcr plate configured in required protocols.
+
+Protocol modifications:
+- Waste disposal height modified, now the liquid waste is dispensed above the reservoir.
+- Aspiration in washes is modified from 220 to 210 ul to avoid the liquid touching the tip filters.
+- Change magnet height to 23 mm when using vwr deep well plates.
+- Removed reuse tips for elution steps in extraction protocol.
+- Now remove trash pause is prompted before the incubation pause.
+
 ## Version 1.9
 
 New features:
