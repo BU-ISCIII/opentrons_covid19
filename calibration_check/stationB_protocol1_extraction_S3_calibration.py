@@ -93,12 +93,16 @@ ELUTION_LABWARE
 # Calculated variables
 if MAGPLATE_LABWARE == 'nest deep generic well plate':
     MAGNET_HEIGHT = 22
+    ASPIRATE_HEIGHT= 1.5
 elif MAGPLATE_LABWARE == 'vwr deep generic well plate':
     MAGNET_HEIGHT = 23
+    ASPIRATE_HEIGHT= 1.5
 elif MAGPLATE_LABWARE == 'ecogen deep generic well plate':
     MAGNET_HEIGHT = 21
+    ASPIRATE_HEIGHT= 1.5
 else:
     MAGNET_HEIGHT = 22
+    ASPIRATE_HEIGHT= 1.5
 
 # End Parameters to adapt the protocol
 ACTION = "StationB-protocol1-extraction"
@@ -473,7 +477,7 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
     for position in [mag_samples_s[0], mag_samples_s[-1]]:
         p1000.move_to(position.top())
         robot.pause(f"Is it at the top of the well?")
-        p1000.aspirate(850, position.bottom(1.5))
+        p1000.aspirate(850, position.bottom(ASPIRATE_HEIGT))
         p1000.move_to(position.top())
         robot.pause(f"Did it aspirate correctly?")
         p1000.dispense(850, waste)
@@ -496,7 +500,7 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
     m300.move_to(mag_samples_m[0].top())
     robot.pause(f"Did it dispense all the liquid?")
     magdeck.engage(height_from_base=MAGNET_HEIGHT)
-    m300.aspirate(210, mag_samples_m[0].bottom(1.5))
+    m300.aspirate(210, mag_samples_m[0].bottom(ASPIRATE_HEIGHT))
     m300.move_to(mag_samples_m[0].top())
     robot.pause(f"Did it aspirate correctly?")
     m300.move_to(mag_samples_m[-1].top())
@@ -506,7 +510,7 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
     m300.move_to(mag_samples_m[-1].top())
     magdeck.engage(height_from_base=MAGNET_HEIGHT)
     robot.pause(f"Did it dispense all the liquid?")
-    m300.aspirate(210, mag_samples_m[-1].bottom(1.5))
+    m300.aspirate(210, mag_samples_m[-1].bottom(ASPIRATE_HEIGHT))
     m300.move_to(mag_samples_m[-1].top())
     robot.pause(f"Did it aspirate correctly?")
     # waste
