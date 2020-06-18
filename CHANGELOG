@@ -11,6 +11,9 @@ Protocol modifications:
 - Removed reuse tips for elution steps in extraction protocol.
 - Now remove trash pause is prompted before the incubation pause.
 
+Documentation:
+- Added calibration docs. Protocol, multichannel pipette and magdeck calibration.
+
 ## Version 1.9
 
 New features:
