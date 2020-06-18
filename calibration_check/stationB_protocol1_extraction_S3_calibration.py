@@ -477,7 +477,7 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
     for position in [mag_samples_s[0], mag_samples_s[-1]]:
         p1000.move_to(position.top())
         robot.pause(f"Is it at the top of the well?")
-        p1000.aspirate(850, position.bottom(ASPIRATE_HEIGT))
+        p1000.aspirate(850, position.bottom(ASPIRATE_HEIGHT))
         p1000.move_to(position.top())
         robot.pause(f"Did it aspirate correctly?")
         p1000.dispense(850, waste)
