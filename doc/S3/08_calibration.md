@@ -12,20 +12,21 @@ Remember that not all tips are perfectly made, and some, specially the longest o
 
 - You can calibrate aiming for he bottom of the well instead of the top. This is useful if you really need to reach the bottom of the labware, but be aware that some wells may again not be perfect and have little different heights or shapes, which could cause the tip to hit bottom during the execution and not aspirate properly. Check the robot main menu inside the app.
 
-# OT-2 Modifications recommended for tips used in calibration
+# Check calibration
+
+Once you have finished calibrating, or before starting using a protocol in a robot for the first time of the day and you are not sure if it is already correctly calibrated, or if you see some issues with the protocol execution and you want to make sure it is not a problem of the calibration, we provide a range of scripts for calibration check.
+
+You can find them in the folder [calibration_check](ttps://github.com/BU-ISCIII/opentrons_covid19/blob/develop/calibration_check) and there is one for each protocol.
+
+To use them, just load the script corresponding the protocol you want to use as if it was the protocol, set the labware, and run. The script will move the pipettes to all the positions in required in the protocol, attach the needed tips and aspirate and dispense water in the first and last well of each labware. Between each action, the robot will stop and ask the operator if the action was executed right, and if there is any problem with the calibration the user will be able to easily locate it.
+
+# Useful tips for calibration
 
 When calibrating, it is sometimes difficult to see where exactly the edge of the tip is, specially under bad light circumstances or when calibrating the deck.
 
 We propose the following tips to make it an easier experience:
 
 - Always make sure you have good lighting. If the internal led strips of your robot work, turn them on and that should be enough.
-
-- Paint your tips edges with a red permanent marker, so it is easier to see them when calibrating.
-
-![calibrating_painted_tip.jpg](https://github.com/BU-ISCIII/opentrons_covid19/blob/develop/img/calibrating_painted_tip.jpg?raw=true)
-
-
-# Useful tips for calibration
 
 - Turn on the lights of the robot before starting the calibration process.
 
@@ -38,3 +39,15 @@ We propose the following tips to make it an easier experience:
 - If you have to calibrate with a p1000, use a 3D printed solution attached to the pipette instead of a tip to get better results.
 
 - Be careful if you have to use a multichannel pipette to calibrate, as it will crash against the walls of the robot in certain positions. Avoid if possible.
+
+# OT-2 Modifications recommended for tips used in calibration
+
+From our experience, we propose some modifications you can use to improve your calibrating accuracy:
+
+- Paint your tips edges with a red permanent marker, so it is easier to see them when calibrating.
+
+![calibrating_painted_tip.jpg](https://github.com/BU-ISCIII/opentrons_covid19/blob/develop/img/calibrating_painted_tip.jpg?raw=true)
+
+- Use a rigid 3D printed tip for calibrating with longer tips as the 1000ul ones.
+
+(We will provide link to the printable file as soon as it is tested) 
