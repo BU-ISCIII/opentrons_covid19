@@ -92,6 +92,7 @@ WASTE labware
 ELUTION_LABWARE
     opentrons aluminum biorad plate
     opentrons aluminum nest plate
+    opentrons aluminum vwr plate
     opentrons aluminum axygen plate
 """
 
@@ -140,6 +141,7 @@ WASTE_LW_DICT = {
 ELUTION_LW_DICT = {
     'opentrons aluminum biorad plate': 'opentrons_96_aluminumblock_biorad_wellplate_200ul',
     'opentrons aluminum nest plate': 'opentrons_96_aluminumblock_nest_wellplate_100ul',
+    'opentrons aluminum vwr plate': 'opentrons_96_aluminumblock_nest_wellplate_100ul',
     'opentrons aluminum axygen plate': 'opentrons_96_aluminumblock_axygen_wellplate_200ul'
 
 }
@@ -661,7 +663,7 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
         voice_notification('empty_trash')
         robot.pause(f"Please, empty trash")
         confirm_door_is_closed()
-        
+
     # incubate off the magnet
     robot.delay(minutes=10, msg='Incubating off magnet for 10 minutes.')
 
