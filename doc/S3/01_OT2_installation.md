@@ -1,16 +1,11 @@
 
 # OT-2 installation summary guide
-
 ## Index guide from opentrons.
-
 -   [Index guide](https://support.opentrons.com/en/collections/1559720-guide-for-getting-started-with-the-ot-2#6-calibrate-the-ot-2)
 
 ## Steps
-
 1) [Unboxing](https://support.opentrons.com/en/articles/2687501-get-started-unbox-the-ot-2)
-
 2) [Unlock](https://support.opentrons.com/en/articles/2687521-get-started-unlock-the-ot-2)
-
 3) **Make inventory:** This is an example of the info you should collect. IDs mean serial numbers for the robot, pipettes and modules.
 
 | Location | Configuration | Robots | ID | static IP      | Host Name    | Macbook Air MAC | Right pipette | RP ID | Left pipette | LP ID | Module 1 type | Module 1 ID |
@@ -26,15 +21,11 @@
 
 4) [Attach pipettes](https://support.opentrons.com/en/articles/2067321-get-started-attach-pipettes)
 > **NOTE:** p20 on the RIGHT, needed later for recalibration.
-
 5) **Renaming the robot**: This changes the hostname of the robots. Run scripts in the folder rename_robots with the ot app. One for each robot. Restart the OT from the OP app.
-
 6) **Assigning static IP address to the robots:** Important in the script variable use IP/16 (mandatory indicate the mask, must be the same that in the mac computer).
-
     -   Run scripts in the folder statics_ips with the ot app. One for each robot.
     -   Restart the OT from the OP app.
     -   Set the IP for the USB network in the Mac to manual IP 169.254.10.10 y mask 255.255.0.0 (this makes the connection faster as it don't need to wait for dhcp resolution).
-
 7) **Configure Robots wifi:** this will allow you to control several robots using only one computer and wireless.
 Set wifi ISCIII-IoT wifi:
 ```Bash
@@ -71,29 +62,21 @@ addr-gen-mode=stable-privacy
 dns-search=
 method=auto
 ```
-
 Where <IP> = code of the robot in two digits format, being the first digit the letter of the robot and the second one its number, I.e. C1 is 31 and A2 is 12.
-
 7) Backup calibration files Run jupyter notebook in a browser.
-
 `http://<robotIP>:48888`
-
 -   Run in the terminal
-
 ```Bash
   ## Save robot factory calibration files
   cat /data/deck_calibration.json > /var/lib/jupyter/notebooks/deck_calibration_factory.json
   ## Save robot factory settings
   cat /data/robot_settings.json > /var/lib/jupyter/notebooks/robot_settings_factory.json
 ```
-
 -   Save factory configuration files. Saved in `\galeon\CNM_testPCR`
-
 8) **Mount offset changes**
 -   Run script normalize_mount_offset.py in the ot app en each robot. This script increases the clearance for the pipette travel to allow additional clearance as its moving to the tip probe in the future.
 -   Restart OT from app.
     > **Note:** app and robot need to be updated first or an error is returned when uploading the protocol saying there are no steps in it.
-
 9) [**Perform deck calibration**]( https://support.opentrons.com/en/articles/2687620-get-started-calibrate-the-deck): Use a pipette on the right mount - a P20S GEN2 is best.
 
 10) **Check if calibration is correct:** Verify the robot's calibration Upload the attached protocol Do pipette and labware calibration as prompted. Run the protocol move_to_crosses.py . Visually check that the tip hits all the crosses.
