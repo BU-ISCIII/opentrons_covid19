@@ -1,6 +1,6 @@
 # OT-2 installation summary guide
 ## Index guide from opentrons.
--   [Index guide](https://support.opentrons.com/en/collections/1559720-guide-for-getting-started-with-the-ot-2#6-calibrate-the-ot-2)
+- [Index guide](https://support.opentrons.com/en/collections/1559720-guide-for-getting-started-with-the-ot-2#6-calibrate-the-ot-2)
 ## Steps
 1) [Unboxing](https://support.opentrons.com/en/articles/2687501-get-started-unbox-the-ot-2)
 2) [Unlock](https://support.opentrons.com/en/articles/2687521-get-started-unlock-the-ot-2)
