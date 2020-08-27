@@ -707,6 +707,7 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
         "ELUTION_LABWARE" : ELUTION_LABWARE,
         "DISPENSE_BEADS" : DISPENSE_BEADS,
         "LANGUAGE" : LANGUAGE,
+        "REUSE_TIPS" : REUSE_TIPS,
         "RESET_TIPCOUNT" : RESET_TIPCOUNT
     }
 
