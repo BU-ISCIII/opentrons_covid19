@@ -490,7 +490,6 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
     robot.pause(f"Is the magnet down?")
     magdeck.engage(height_from_base=MAGNET_HEIGHT)
     robot.pause(f"Is the magnet at the right height?")
-    magdeck.disengage()
 
     # check top-left and bottom-right well of each labware with each pipette which uses them
     pick_up(p1000, tips1000)
