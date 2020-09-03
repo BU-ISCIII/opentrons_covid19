@@ -70,7 +70,7 @@ Where <IP> = code of the robot in two digits format, being the first digit the l
   ## Save robot factory settings
   cat /data/robot_settings.json > /var/lib/jupyter/notebooks/robot_settings_factory.json
 ```
--   Save factory configuration files. Saved in `\galeon\CNM_testPCR`
+-   Save factory configuration files. Saved in `\galeon\CNM_OT_Robots`
 8) **Mount offset changes**
 -   Run script normalize_mount_offset.py in the ot app en each robot. This script increases the clearance for the pipette travel to allow additional clearance as its moving to the tip probe in the future.
 - Restart OT from app.
