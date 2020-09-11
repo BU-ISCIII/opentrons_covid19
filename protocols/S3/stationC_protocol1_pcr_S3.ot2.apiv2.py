@@ -508,7 +508,8 @@ def transfer_mastermix(mm_tube, dests, p300, p20, tiprack300, tiprack20):
             pip.aspirate(4, disp_loc)
         pip.distribute(VOLUME_MMIX, disp_loc, [d.top(-5) for d in set],
                    air_gap=airgap, disposal_volume=0, new_tip='never')
-        pip.blow_out(disp_loc)
+        if pip == p300:
+            pip.dispense(4, mm_tube.top())
         dest_count += 1
         if (dest_count % 3 == 0) and pip == p20:
             drop(pip)
