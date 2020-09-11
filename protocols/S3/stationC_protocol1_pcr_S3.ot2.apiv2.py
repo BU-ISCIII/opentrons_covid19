@@ -488,6 +488,7 @@ def transfer_mastermix(mm_tube, dests, p300, p20, tiprack300, tiprack20):
              for i in range(len(split_ind)-1)] + [dests[split_ind[-1]:]]
     pip = p300 if VOLUME_MMIX >= 20 else p20
     airgap = 0 if VOLUME_MMIX >= 20 else 1
+    touchtip = True if VOLUME_MMIX >= 20 else False
     tiprack = tiprack300 if VOLUME_MMIX >= 20 else tiprack20
     if not pip.hw_pipette['has_tip']:
         pick_up(pip,tiprack)
@@ -507,11 +508,11 @@ def transfer_mastermix(mm_tube, dests, p300, p20, tiprack300, tiprack20):
         if pip == p300:
             pip.aspirate(4, disp_loc)
         pip.distribute(VOLUME_MMIX, disp_loc, [d.top(-5) for d in set],
-                   air_gap=airgap, disposal_volume=0, new_tip='never', touch_tip=True)
+                   air_gap=airgap, disposal_volume=0, new_tip='never', touch_tip=touchtip)
         if pip == p300:
             pip.dispense(4, mm_tube.top())
         dest_count += 1
-        if (dest_count % 3 == 0):
+        if (dest_count % 3 == 0) and pip == p20:
             drop(pip)
             pick_up(pip,tiprack)
     if pip.hw_pipette['has_tip']:
