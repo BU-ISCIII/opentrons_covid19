@@ -513,6 +513,9 @@ def transfer_mastermix(mm_tube, dests, p300, p20, tiprack300, tiprack20):
         if (dest_count % 3 == 0) and pip == p20:
             drop(pip)
             pick_up(pip,tiprack)
+        if (dest_count % 24 == 0) and pip == p300:
+            drop(pip)
+            pick_up(pip,tiprack)
     if pip.hw_pipette['has_tip']:
         drop(pip)
 
