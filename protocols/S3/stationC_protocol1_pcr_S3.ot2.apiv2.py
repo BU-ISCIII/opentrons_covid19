@@ -503,7 +503,8 @@ def transfer_mastermix(mm_tube, dests, p300, p20, tiprack300, tiprack20):
             mm_volume -= VOLUME_MMIX * max_trans_per_asp
             volume_height = get_mm_height(mm_volume)
             disp_loc = mm_tube.bottom(volume_height)
-        pip.aspirate(4, disp_loc)
+        if pip == pip300:
+            pip.aspirate(4, disp_loc)
         pip.distribute(VOLUME_MMIX, disp_loc, [d.bottom(2) for d in set],
                    air_gap=1, disposal_volume=0, new_tip='never')
         pip.blow_out(disp_loc)
