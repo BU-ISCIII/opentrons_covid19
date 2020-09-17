@@ -153,6 +153,7 @@ LANGUAGE_DICT = {
 
 if LANGUAGE_DICT[LANGUAGE] == 'eng':
     VOICE_FILES_DICT = {
+        'id': './data/sounds/id.mp3',
         'start': './data/sounds/started_process.mp3',
         'finish': './data/sounds/finished_process.mp3',
         'close_door': './data/sounds/close_door.mp3',
@@ -161,6 +162,7 @@ if LANGUAGE_DICT[LANGUAGE] == 'eng':
     }
 elif LANGUAGE_DICT[LANGUAGE] == 'esp':
     VOICE_FILES_DICT = {
+        'id': './data/sounds/id_esp.mp3',
         'start': './data/sounds/started_process_esp.mp3',
         'finish': './data/sounds/finished_process_esp.mp3',
         'close_door': './data/sounds/close_door_esp.mp3',
@@ -259,6 +261,15 @@ def finish_run():
 
 def voice_notification(action):
     if not robot.is_simulating():
+        fname = VOICE_FILES_DICT['id']
+        if os.path.isfile(fname) is True:
+                subprocess.run(
+                ['mpg123', fname],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+                )
+        else:
+            robot.comment(f"Sound file does not exist. Call the technician")
         fname = VOICE_FILES_DICT[action]
         if os.path.isfile(fname) is True:
                 subprocess.run(
