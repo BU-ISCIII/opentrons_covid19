@@ -611,7 +611,7 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
         tips300 = [
             robot.load_labware(
                 TIPS300_LW_DICT[TIPS300], slot, '300µl filter tiprack')
-            for slot in ['8', '6', '2', '3']
+            for slot in ['8', '9', '6', '2', '3']
         ]
         tipsreuse = [
             robot.load_labware(
