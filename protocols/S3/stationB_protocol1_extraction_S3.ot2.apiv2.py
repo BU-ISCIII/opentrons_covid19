@@ -669,11 +669,11 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
         # Mix bead
         mix_beads(7, mag_samples_m,m300,tips300)
 
-    # empty trash
-    if NUM_SAMPLES >= 48:
-        voice_notification('empty_trash')
-        robot.pause(f"Please, empty trash")
-        confirm_door_is_closed()
+    # # empty trash
+    # if NUM_SAMPLES >= 48:
+    #     voice_notification('empty_trash')
+    #     robot.pause(f"Please, empty trash")
+    #     confirm_door_is_closed()
 
     # incubate off the magnet
     robot.delay(minutes=10, msg='Incubating off magnet for 10 minutes.')
@@ -687,11 +687,11 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
     # remove supernatant with P1000
     remove_supernatant(mag_samples_s,waste,p1000,tips1000)
 
-    # empty trash
-    if NUM_SAMPLES >= 48:
-        voice_notification('empty_trash')
-        robot.pause(f"Please, empty trash")
-        confirm_door_is_closed()
+    # # empty trash
+    # if NUM_SAMPLES >= 48:
+    #     voice_notification('empty_trash')
+    #     robot.pause(f"Please, empty trash")
+    #     confirm_door_is_closed()
 
     # 3x washes
     if REUSE_TIPS == True:
