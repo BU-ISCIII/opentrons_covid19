@@ -72,6 +72,7 @@ MMTUBE_LABWARE must be one of the following:
 PCR_LABWARE must be one of the following:
     opentrons aluminum biorad plate
     opentrons aluminum nest plate
+    opentrons aluminum vwr plate
     opentrons aluminum axygen plate
     opentrons aluminum strip short
     covidwarriors aluminum biorad plate
@@ -86,6 +87,7 @@ ELUTION_LABWARE must be one of the following:
     covidwarriors aluminum 1.5ml tubes
     opentrons aluminum biorad plate
     opentrons aluminum nest plate
+    opentrons aluminum vwr plate
     opentrons aluminum axygen plate
     covidwarriors aluminum biorad plate
     opentrons aluminum strip alpha
@@ -126,6 +128,7 @@ MM_LW_DICT = {
 PCR_LW_DICT = {
     'opentrons aluminum biorad plate': 'opentrons_96_aluminumblock_biorad_wellplate_200ul',
     'opentrons aluminum nest plate': 'opentrons_96_aluminumblock_nest_wellplate_100ul',
+    'opentrons aluminum vwr plate': 'opentrons_96_aluminumblock_nest_wellplate_100ul',
     'opentrons aluminum axygen plate': 'opentrons_96_aluminumblock_axygen_wellplate_200ul',
     'opentrons aluminum strip short': 'opentrons_aluminumblock_96_pcrstrips_100ul',
     'covidwarriors aluminum biorad plate': 'covidwarriors_aluminumblock_96_bioradwellplate_200ul',
@@ -143,6 +146,7 @@ EL_LW_DICT = {
     # PCR plate
     'opentrons aluminum biorad plate': 'opentrons_96_aluminumblock_biorad_wellplate_200ul',
     'opentrons aluminum nest plate': 'opentrons_96_aluminumblock_nest_wellplate_100ul',
+    'opentrons aluminum vwr plate': 'opentrons_96_aluminumblock_nest_wellplate_100ul',
     'opentrons aluminum axygen plate': 'opentrons_96_aluminumblock_axygen_wellplate_200ul',
     'covidwarriors aluminum biorad plate': 'covidwarriors_aluminumblock_96_bioradwellplate_200ul',
     # Strips
@@ -166,6 +170,7 @@ LANGUAGE_DICT = {
 
 if LANGUAGE_DICT[LANGUAGE] == 'eng':
     VOICE_FILES_DICT = {
+        'id': './data/sounds/id.mp3',
         'start': './data/sounds/started_process.mp3',
         'finish': './data/sounds/finished_process.mp3',
         'close_door': './data/sounds/close_door.mp3',
@@ -174,6 +179,7 @@ if LANGUAGE_DICT[LANGUAGE] == 'eng':
     }
 elif LANGUAGE_DICT[LANGUAGE] == 'esp':
     VOICE_FILES_DICT = {
+        'id': './data/sounds/id_esp.mp3',
         'start': './data/sounds/started_process_esp.mp3',
         'finish': './data/sounds/finished_process_esp.mp3',
         'close_door': './data/sounds/close_door_esp.mp3',
@@ -274,6 +280,15 @@ def finish_run():
 
 def voice_notification(action):
     if not robot.is_simulating():
+        fname = VOICE_FILES_DICT['id']
+        if os.path.isfile(fname) is True:
+                subprocess.run(
+                ['mpg123', fname],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+                )
+        else:
+            robot.comment(f"Sound file does not exist. Call the technician")
         fname = VOICE_FILES_DICT[action]
         if os.path.isfile(fname) is True:
                 subprocess.run(
@@ -483,6 +498,8 @@ def transfer_mastermix(mm_tube, dests, p300, p20, tiprack300, tiprack20):
     dest_sets = [dests[split_ind[i]:split_ind[i+1]]
              for i in range(len(split_ind)-1)] + [dests[split_ind[-1]:]]
     pip = p300 if VOLUME_MMIX >= 20 else p20
+    airgap = 0 if VOLUME_MMIX >= 20 else 1
+    touchtip = True if VOLUME_MMIX >= 20 else False
     tiprack = tiprack300 if VOLUME_MMIX >= 20 else tiprack20
     if not pip.hw_pipette['has_tip']:
         pick_up(pip,tiprack)
@@ -499,10 +516,12 @@ def transfer_mastermix(mm_tube, dests, p300, p20, tiprack300, tiprack20):
             mm_volume -= VOLUME_MMIX * max_trans_per_asp
             volume_height = get_mm_height(mm_volume)
             disp_loc = mm_tube.bottom(volume_height)
-        pip.aspirate(4, disp_loc)
-        pip.distribute(VOLUME_MMIX, disp_loc, [d.bottom(2) for d in set],
-                   air_gap=1, disposal_volume=0, new_tip='never')
-        pip.blow_out(disp_loc)
+        if pip == p300:
+            pip.aspirate(4, disp_loc)
+        pip.distribute(VOLUME_MMIX, disp_loc, [d.top(-5) for d in set],
+                   air_gap=airgap, disposal_volume=0, new_tip='never', touch_tip=touchtip)
+        if pip == p300:
+            pip.dispense(4, mm_tube.top())
         dest_count += 1
         if (dest_count % 3 == 0) and pip == p20:
             drop(pip)

@@ -61,6 +61,7 @@ MM_LABWARE must be one of the following:
 PCR_LABWARE must be one of the following:
     opentrons aluminum biorad plate
     opentrons aluminum nest plate
+    opentrons aluminum vwr plate
     opentrons aluminum axygen plate
     opentrons aluminum strip short
     covidwarriors aluminum biorad plate
@@ -75,6 +76,7 @@ ELUTION_LABWARE must be one of the following:
     covidwarriors aluminum 1.5ml tubes
     opentrons aluminum biorad plate
     opentrons aluminum nest plate
+    opentrons aluminum vwr plate
     opentrons aluminum axygen plate
     covidwarriors aluminum biorad plate
     opentrons aluminum strip alpha
@@ -94,6 +96,7 @@ MM_LW_DICT = {
 PCR_LW_DICT = {
     'opentrons aluminum biorad plate': 'opentrons_96_aluminumblock_biorad_wellplate_200ul',
     'opentrons aluminum nest plate': 'opentrons_96_aluminumblock_nest_wellplate_100ul',
+    'opentrons aluminum vwr plate': 'opentrons_96_aluminumblock_nest_wellplate_100ul',
     'opentrons aluminum axygen plate': 'opentrons_96_aluminumblock_axygen_wellplate_200ul',
     'opentrons aluminum strip short': 'opentrons_aluminumblock_96_pcrstrips_100ul',
     'covidwarriors aluminum biorad plate': 'covidwarriors_aluminumblock_96_bioradwellplate_200ul',
@@ -104,6 +107,7 @@ EL_LW_DICT = {
     # PCR plate
     'opentrons aluminum biorad plate': 'opentrons_96_aluminumblock_biorad_wellplate_200ul',
     'opentrons aluminum nest plate': 'opentrons_96_aluminumblock_nest_wellplate_100ul',
+    'opentrons aluminum vwr plate': 'opentrons_96_aluminumblock_nest_wellplate_100ul',
     'opentrons aluminum axygen plate': 'opentrons_96_aluminumblock_axygen_wellplate_200ul',
     'covidwarriors aluminum biorad plate': 'covidwarriors_aluminumblock_96_bioradwellplate_200ul',
     # Strips
@@ -122,6 +126,7 @@ LANGUAGE_DICT = {
 
 if LANGUAGE_DICT[LANGUAGE] == 'eng':
     VOICE_FILES_DICT = {
+        'id': './data/sounds/id.mp3',
         'start': './data/sounds/started_process.mp3',
         'finish': './data/sounds/finished_process.mp3',
         'close_door': './data/sounds/close_door.mp3',
@@ -130,6 +135,7 @@ if LANGUAGE_DICT[LANGUAGE] == 'eng':
     }
 elif LANGUAGE_DICT[LANGUAGE] == 'esp':
     VOICE_FILES_DICT = {
+        'id': './data/sounds/id_esp.mp3',
         'start': './data/sounds/started_process_esp.mp3',
         'finish': './data/sounds/finished_process_esp.mp3',
         'close_door': './data/sounds/close_door_esp.mp3',
@@ -228,6 +234,15 @@ def finish_run():
 
 def voice_notification(action):
     if not robot.is_simulating():
+        fname = VOICE_FILES_DICT['id']
+        if os.path.isfile(fname) is True:
+                subprocess.run(
+                ['mpg123', fname],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+                )
+        else:
+            robot.comment(f"Sound file does not exist. Call the technician")
         fname = VOICE_FILES_DICT[action]
         if os.path.isfile(fname) is True:
                 subprocess.run(

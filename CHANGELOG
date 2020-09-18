@@ -1,3 +1,14 @@
+## Version 1.11
+
+New features:
+- Stations identify themselves when reproducing recorded notification.
+- New labware configuration: wvr pcr plate configured in required protocols.
+
+Protocol modifications:
+- Fixed m300 behaviour in C stations, as it was a mess dispensing mastermix in several wells with only one load.
+- Protocol B resusing tips now has an extra tiprack.
+- Protocol B does not stop automatically to let the user empty the trash anymore, now it has to be paused manually.
+
 ## Version 1.10
 
 New features:

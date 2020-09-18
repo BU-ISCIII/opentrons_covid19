@@ -4,19 +4,15 @@ from opentrons.drivers.rpi_drivers import gpio
 import time
 import math
 import os
-import sys
 import subprocess
 import json
 from datetime import datetime
-custom_modules_path = "/var/user-packages/usr/lib/python3.7/site-packages"
-if custom_modules_path not in sys.path:
-    sys.path.append(custom_modules_path)
-import requests
+
 
 # metadata
 metadata = {
     'protocolName': 'S3 Station B Protocol 1 extraction Version 2',
-    'author': 'Nick <protocols@opentrons.com> Sara <smonzon@isciii.es> Miguel <mjuliam@isciii.es>',
+    'author': 'Sara <smonzon@isciii.es> Miguel <mjuliam@isciii.es>',
     'source': 'Custom Protocol Request',
     'apiLevel': '2.3'
 }
@@ -37,20 +33,19 @@ REAGENT SETUP:
 # Parameters to adapt the protocol
 # Warning writing any Parameters below this line.
 # It will be deleted if opentronsWeb is used.
-
+DISPENSE_BEADS = False
+ELUTION_LABWARE = 'opentrons aluminum nest plate'
+LANGUAGE = 'esp'
+MAGPLATE_LABWARE = 'ecogen deep generic well plate'
 NUM_SAMPLES = 96
 REAGENT_LABWARE = 'nest 12 reservoir plate'
-MAGPLATE_LABWARE = 'nest deep generic well plate'
-WASTE_LABWARE = 'nest 1 reservoir plate'
-ELUTION_LABWARE = 'opentrons aluminum nest plate'
-DISPENSE_BEADS = False
-TIPS300 = 'opentrons'
-TIPS1000 = 'opentrons'
+RESET_TIPCOUNT = False
 REUSE_TIPS = True
-LANGUAGE = 'esp'
-RESET_TIPCOUNT = True
-PROTOCOL_ID = "0000-AA"
-URL = 'localhost'
+TIPS1000 = 'opentrons'
+TIPS300 = 'opentrons'
+WASTE_LABWARE = 'nest 1 reservoir plate'
+PROTOCOL_ID = '0256-AA'
+URL =  'openrobots.isciii.es/api/robots/createUsage'
 # End Parameters to adapt the protocol
 
 ## global vars
@@ -77,7 +72,6 @@ TIPS 1000
 
 REAGENT_LABWARE must be one of the following:
     nest 12 reservoir plate
-    agilent 12 reservoir plate
 
 MAGPLATE_LABWARE must be one of the following:
     opentrons deep generic well plate
@@ -87,42 +81,45 @@ MAGPLATE_LABWARE must be one of the following:
 
 WASTE labware
     nest 1 reservoir plate
-    agilent 1 reservoir plate
 
 ELUTION_LABWARE
     opentrons aluminum biorad plate
     opentrons aluminum nest plate
-    opentrons aluminum vwr plate
-    opentrons aluminum axygen plate
 """
+# Parameters to adapt the protocol
+# Warning writing any Parameters below this line.
+# It will be deleted if opentronsWeb is used.
 
 # Calculated variables
 if MAGPLATE_LABWARE == 'nest deep generic well plate':
     MAGNET_HEIGHT = 22
+    ASPIRATE_HEIGHT= 1.5
 elif MAGPLATE_LABWARE == 'vwr deep generic well plate':
     MAGNET_HEIGHT = 23
+    ASPIRATE_HEIGHT= 1.5
 elif MAGPLATE_LABWARE == 'ecogen deep generic well plate':
     MAGNET_HEIGHT = 21
+    ASPIRATE_HEIGHT= 1.5
 else:
     MAGNET_HEIGHT = 22
+    ASPIRATE_HEIGHT= 1.5
 
-# Config variables
+# End Parameters to adapt the protocol
 ACTION = "StationB-protocol1-extraction"
+PROTOCOL_ID = "0000-AA"
 
 # Constants
 TIPS300_LW_DICT = {
-    'biotix': 'Biotix 96 Filter Tip Rack 300 µL',
+    'biotix': 'biotix_96_tiprack_300ul_flat',
     'opentrons': 'opentrons_96_tiprack_300ul'
 }
 
 TIPS1000_LW_DICT = {
-    'biotix': 'Biotix 96 Filter Tip Rack 1000 µL',
+    'biotix': 'biotix_96_tiprack_1000ul',
     'opentrons': 'opentrons_96_tiprack_1000ul'
 }
-
 REAGENT_LW_DICT = {
-    'nest 12 reservoir plate': 'nest_12_reservoir_15ml',
-    'agilent 12 reservoir plate': 'agilent_12_reservoir_21000ul'
+    'nest 12 reservoir plate': 'nest_12_reservoir_15ml'
 }
 
 MAGPLATE_LW_DICT = {
@@ -134,15 +131,12 @@ MAGPLATE_LW_DICT = {
 
 WASTE_LW_DICT = {
     # Radius of each possible tube
-    'nest 1 reservoir plate': 'nest_1_reservoir_195ml',
-    'agilent 1 reservoir plate': 'agilent_1_reservoir_300000ul'
+    'nest 1 reservoir plate': 'nest_1_reservoir_195ml'
 }
 
 ELUTION_LW_DICT = {
     'opentrons aluminum biorad plate': 'opentrons_96_aluminumblock_biorad_wellplate_200ul',
-    'opentrons aluminum nest plate': 'opentrons_96_aluminumblock_nest_wellplate_100ul',
-    'opentrons aluminum vwr plate': 'opentrons_96_aluminumblock_nest_wellplate_100ul',
-    'opentrons aluminum axygen plate': 'opentrons_96_aluminumblock_axygen_wellplate_200ul'
+    'opentrons aluminum nest plate': 'opentrons_96_aluminumblock_nest_wellplate_100ul'
 
 }
 
@@ -153,7 +147,6 @@ LANGUAGE_DICT = {
 
 if LANGUAGE_DICT[LANGUAGE] == 'eng':
     VOICE_FILES_DICT = {
-        'id': './data/sounds/id.mp3',
         'start': './data/sounds/started_process.mp3',
         'finish': './data/sounds/finished_process.mp3',
         'close_door': './data/sounds/close_door.mp3',
@@ -162,7 +155,6 @@ if LANGUAGE_DICT[LANGUAGE] == 'eng':
     }
 elif LANGUAGE_DICT[LANGUAGE] == 'esp':
     VOICE_FILES_DICT = {
-        'id': './data/sounds/id_esp.mp3',
         'start': './data/sounds/started_process_esp.mp3',
         'finish': './data/sounds/finished_process_esp.mp3',
         'close_door': './data/sounds/close_door_esp.mp3',
@@ -171,60 +163,6 @@ elif LANGUAGE_DICT[LANGUAGE] == 'esp':
     }
 
 # Function definitions
-
-def write_to_error_log (info, reason):
-    date = datetime.now().strftime("%Y_%m_%d")
-    folder_date = os.path.join('/data/logs', date)
-    time_now = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-    json_file = time_now + '.json'
-    folder_file_name = os.path.join(folder_date, json_file)
-    folder_error_log = os.path.join(folder_date,'error.log')
-    if not os.path.exists(folder_date):
-        try:
-            os.makedirs(folder_date)
-        except:
-            return
-    try:
-        # Create a new file for dumping json data
-        with open (folder_file_name , 'w') as fh:
-            json.dump(info, fh, indent=4)
-        # Append status reason code to the log
-        with open(folder_error_log, 'a') as fh:
-            fh.write( time_now +  '  Unable to accept the requests get error : '+ reason + '\n')
-    except:
-        return
-
-def run_info(start, end, parameters = dict()):
-    info = {}
-    hostname = subprocess.run(
-        ['hostname'],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE
-    ).stdout.decode('utf-8')
-
-    info["RobotID"] = hostname
-    info["executedAction"] = ACTION
-    info["ProtocolID"] = PROTOCOL_ID
-    info["StartRunTime"] = start
-    info["FinishRunTime"] = end
-    info["parameters"] = parameters
-
-    headers = {'Content-type': 'application/json'}
-    url_https = 'https://' + URL
-    url_http = 'http://' + URL
-
-    if not robot.is_simulating():
-        try:
-            r = requests.post(url_https, data=json.dumps(info), headers=headers)
-        except:
-            try:
-                r = requests.post(url_http, data=json.dumps(info), headers=headers)
-            except:
-                write_to_error_log(info, 'Server communication error')
-                return
-        if r.status_code > 201 :
-            write_to_error_log(info, str(r.status_code))
-
 def check_door():
     return gpio.read_window_switches()
 
@@ -242,34 +180,13 @@ def confirm_door_is_closed():
             #Set light color to green
             gpio.set_button_light(0,1,0)
 
-def start_run():
-    voice_notification('start')
-    gpio.set_button_light(0,1,0)
-    now = datetime.now()
-    # dd/mm/YY H:M:S
-    start_time = now.strftime("%Y/%m/%d %H:%M:%S")
-    return start_time
-
 def finish_run():
     voice_notification('finish')
     #Set light color to blue
     gpio.set_button_light(0,0,1)
-    now = datetime.now()
-    # dd/mm/YY H:M:S
-    finish_time = now.strftime("%Y/%m/%d %H:%M:%S")
-    return finish_time
 
 def voice_notification(action):
     if not robot.is_simulating():
-        fname = VOICE_FILES_DICT['id']
-        if os.path.isfile(fname) is True:
-                subprocess.run(
-                ['mpg123', fname],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
-                )
-        else:
-            robot.comment(f"Sound file does not exist. Call the technician")
         fname = VOICE_FILES_DICT[action]
         if os.path.isfile(fname) is True:
                 subprocess.run(
@@ -294,14 +211,10 @@ def retrieve_tip_info(pip,tipracks,file_path = '/data/B/tip_log.json'):
                     data = json.load(json_file)
                     if 'P1000' in str(pip):
                         tip_log['count'][pip] = data['tips1000']
-                    elif 'P300' in str(pip) and 'Single-Channel' in str(pip):
+                    elif 'P300' in str(pip):
                         tip_log['count'][pip] = data['tips300']
-                    elif 'P300' in str(pip) and '8-Channel' in str(pip):
-                        tip_log['count'][pip] = data['tipsm300']
-                    elif 'P20' in str(pip) and 'Single-Channel' in str(pip):
+                    elif 'P20' in str(pip):
                         tip_log['count'][pip] = data['tips20']
-                    elif 'P20' in str(pip) and '8-Channel' in str(pip):
-                        tip_log['count'][pip] = data['tipsm20']
 
         if "8-Channel" in str(pip):
             tip_log['tips'][pip] =  [tip for rack in tipracks for tip in rack.rows()[0]]
@@ -320,19 +233,20 @@ def save_tip_info(file_path = '/data/B/tip_log.json'):
         for pip in tip_log['count']:
             if "P1000" in str(pip):
                 data['tips1000'] = tip_log['count'][pip]
-            elif 'P300' in str(pip) and 'Single-Channel' in str(pip):
+            elif "P300" in str(pip):
                 data['tips300'] = tip_log['count'][pip]
-            elif 'P300' in str(pip) and '8-Channel' in str(pip):
-                data['tipsm300'] = tip_log['count'][pip]
-            elif 'P20' in str(pip) and 'Single-Channel' in str(pip):
+            elif "P20" in str(pip):
                 data['tips20'] = tip_log['count'][pip]
-            elif 'P20' in str(pip) and '8-Channel' in str(pip):
-                data['tipsm20'] = tip_log['count'][pip]
 
         with open(file_path, 'a+') as outfile:
             json.dump(data, outfile)
 
 def pick_up(pip,tiprack):
+    ## retrieve tip_log
+    global tip_log
+    if not tip_log:
+        tip_log = {}
+    tip_log = retrieve_tip_info(pip,tiprack)
     if tip_log['count'][pip] == tip_log['max'][pip]:
         voice_notification('replace_tipracks')
         robot.pause('Replace ' + str(pip.max_volume) + 'µl tipracks before \
@@ -368,7 +282,7 @@ def mix_beads(reps, dests, pip, tiprack):
         pip.aspirate(20, m.top(-2))
         drop(pip)
 
-def dispense_beads(reps,sources,dests,pip,tiprack):
+def dispense_beads(sources,dests,pip,tiprack):
     ## Mix beads prior to dispensing.
     pick_up(pip,tiprack)
     for s in sources:
@@ -383,72 +297,15 @@ def dispense_beads(reps,sources,dests,pip,tiprack):
         drop(pip)
         pick_up(pip,tiprack)
         pip.transfer(200, dests[i//3], m.bottom(5), new_tip='never', air_gap=20)
-        mix_beads(reps, dests, pip, tiprack)
+        mix_beads(7, dests, pip, tiprack)
 
 def remove_supernatant(sources,waste,pip,tiprack):
     for i, m in enumerate(sources):
-        loc = m.bottom(1.5)
+        loc = m.bottom(1)
         pick_up(pip,tiprack)
-        pip.transfer(850, loc, waste, air_gap=100, new_tip='never')
+        pip.transfer(800, loc, waste, air_gap=100, new_tip='never')
         pip.blow_out(waste)
         drop(pip)
-
-def wash_reuse(wash_sets,dests,waste,magdeck,pip,tiprack,tipreuse):
-    wash_num = 0
-    for wash_set in wash_sets:
-        # transfer wash
-        pick_up(pip,tiprack)
-        for i, m in enumerate(dests):
-            magdeck.disengage()
-            wash_chan = wash_set[i//6]
-            dispense_default_speed = pip.flow_rate.dispense
-            pip.flow_rate.dispense = 200
-            pip.transfer(200, wash_chan.bottom(2), m.top(), new_tip='never', air_gap=10)
-            pip.flow_rate.dispense = dispense_default_speed
-
-        # mix beads with wash
-        tips_loc = 0
-        for i, m in enumerate(dests):
-
-            if tips_loc == 0:
-                drop(pip)
-
-            if  wash_num != 0:
-                pip.pick_up_tip(tipreuse[0].rows()[0][tips_loc])
-            else:
-                pick_up(pip,tiprack)
-
-            dispense_default_speed = pip.flow_rate.dispense
-            pip.flow_rate.dispense = 1500
-            pip.mix(7, 200, m.bottom(2))
-            pip.flow_rate.dispense = dispense_default_speed
-            if  wash_num != 0:
-                pip.return_tip(home_after=False)
-            else:
-                pip.drop_tip(tipreuse[0].rows()[0][tips_loc], home_after=False)
-            tips_loc += 1
-
-        magdeck.engage(height_from_base=MAGNET_HEIGHT)
-        robot.delay(seconds=75, msg='Incubating on magnet for 75 seconds.')
-
-        wash_num += 1
-
-        # remove supernatant
-        tips_loc = 0
-        for i, m in enumerate(dests):
-            pip.pick_up_tip(tipreuse[0].rows()[0][tips_loc])
-            aspire_default_speed = pip.flow_rate.aspirate
-            pip.flow_rate.aspirate = 75
-            asp_loc = m.bottom(1.5)
-            pip.transfer(210, asp_loc, waste, new_tip='never', air_gap=10)
-            pip.flow_rate.aspirate = aspire_default_speed
-            pip.blow_out(waste)
-            pip.aspirate(10,waste)
-            if  wash_num != 3:
-                pip.return_tip(home_after=False)
-            else:
-                pip.drop_tip(home_after=False)
-            tips_loc += 1
 
 def wash(wash_sets,dests,waste,magdeck,pip,tiprack):
     for wash_set in wash_sets:
@@ -456,6 +313,9 @@ def wash(wash_sets,dests,waste,magdeck,pip,tiprack):
             # transfer and mix wash with beads
             magdeck.disengage()
             wash_chan = wash_set[i//6]
+            side = 1 if i % 2 == 0 else -1
+            asp_loc = m.bottom(1.3)
+            disp_loc = m.bottom(5)
             pick_up(pip,tiprack)
             pip.transfer(
                 200, wash_chan.bottom(2), m.center(), new_tip='never', air_gap=20)
@@ -472,44 +332,10 @@ def wash(wash_sets,dests,waste,magdeck,pip,tiprack):
             aspire_default_speed = pip.flow_rate.aspirate
             pip.flow_rate.aspirate = 75
             asp_loc = m.bottom(1.5)
-            pip.transfer(210, asp_loc, waste, new_tip='never', air_gap=10)
+            pip.transfer(200, asp_loc, waste, new_tip='never', air_gap=20)
             pip.flow_rate.aspirate = aspire_default_speed
             pip.blow_out(waste)
             drop(pip)
-
-def elute_samples_reuse(sources,dests,buffer,magdeck,pip,tipracks,tipreuse):
-    ## dispense buffer
-    tips_loc = 0
-    for i, m in enumerate(sources):
-        pick_up(pip,tipracks)
-        dispense_default_speed = pip.flow_rate.dispense
-        pip.flow_rate.dispense = 1500
-        pip.transfer(
-            50, buffer.bottom(2), m.bottom(1), new_tip='never', air_gap=10)
-        pip.mix(20, 200, m.bottom(1))
-        pip.flow_rate.dispense = dispense_default_speed
-        pip.drop_tip(tipreuse[0].rows()[0][tips_loc], home_after=False)
-        tips_loc += 1
-
-    ## Incubation steps
-    robot.delay(minutes=5, msg='Incubating off magnet for 5 minutes.')
-    magdeck.engage(height_from_base=MAGNET_HEIGHT)
-    robot.delay(seconds=120, msg='Incubating on magnet for 120 seconds.')
-
-    aspire_default_speed = pip.flow_rate.aspirate
-    pip.flow_rate.aspirate = 50
-    ## Dispense elutes in pcr plate.
-    tips_loc = 0
-    for i, (m, e) in enumerate(zip(sources, dests)):
-        # tranfser and mix elution buffer with beads
-        asp_loc = m.bottom(1.5)
-        pip.pick_up_tip(tipreuse[0].rows()[0][tips_loc])
-        # transfer elution to new plate
-        pip.transfer(50, asp_loc, e, new_tip='never', air_gap=10)
-        pip.blow_out(e.top(-2))
-        drop(pip)
-        tips_loc += 1
-    pip.flow_rate.aspirate = aspire_default_speed
 
 def elute_samples(sources,dests,buffer,magdeck,pip,tipracks):
     ## dispense buffer
@@ -533,6 +359,8 @@ def elute_samples(sources,dests,buffer,magdeck,pip,tipracks):
     ## Dispense elutes in pcr plate.
     for i, (m, e) in enumerate(zip(sources, dests)):
         # tranfser and mix elution buffer with beads
+        # side = 1 if i % 2 == 0 else -1
+        # asp_loc = m.bottom(5).move(Point(x=-1*side*2))
         asp_loc = m.bottom(1.5)
         pick_up(pip,tipracks)
         # transfer elution to new plate
@@ -552,9 +380,6 @@ def run(ctx: protocol_api.ProtocolContext):
     # confirm door is close
     robot.comment(f"Please, close the door")
     confirm_door_is_closed()
-
-    # Begin run
-    start_time = start_run()
 
     # load labware and modules
     ## ELUTION LABWARE
@@ -611,7 +436,7 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
         tips300 = [
             robot.load_labware(
                 TIPS300_LW_DICT[TIPS300], slot, '300µl filter tiprack')
-            for slot in ['8', '9', '6', '2', '3']
+            for slot in ['8', '6', '2', '3']
         ]
         tipsreuse = [
             robot.load_labware(
@@ -660,66 +485,60 @@ following:\nopentrons deep generic well plate\nnest deep generic well plate\nvwr
     p1000.flow_rate.dispense = 1000
     p1000.flow_rate.blow_out = 1000
 
-    if(DISPENSE_BEADS):
-        # premix, transfer, and mix magnetic beads with sample
-        ## bead dests depending on number of samples
-        bead_dests = bead_buffer[:math.ceil(num_cols/4)]
-        dispense_beads(7,bead_dests,mag_samples_m,m300,tips300)
-    else:
-        # Mix bead
-        mix_beads(7, mag_samples_m,m300,tips300)
-
-    # # empty trash
-    # if NUM_SAMPLES >= 48:
-    #     voice_notification('empty_trash')
-    #     robot.pause(f"Please, empty trash")
-    #     confirm_door_is_closed()
-
-    # incubate off the magnet
-    robot.delay(minutes=10, msg='Incubating off magnet for 10 minutes.')
-
-    ## First incubate on magnet.
-    magdeck.engage(height_from_base=MAGNET_HEIGHT)
-    robot.delay(minutes=7, msg='Incubating on magnet for 7 minutes.')
-
-
-
-    # remove supernatant with P1000
-    remove_supernatant(mag_samples_s,waste,p1000,tips1000)
-
-    # # empty trash
-    # if NUM_SAMPLES >= 48:
-    #     voice_notification('empty_trash')
-    #     robot.pause(f"Please, empty trash")
-    #     confirm_door_is_closed()
-
-    # 3x washes
-    if REUSE_TIPS == True:
-        wash_reuse(wash_sets,mag_samples_m,waste,magdeck,m300,tips300,tipsreuse)
-    else:
-        wash(wash_sets,mag_samples_m,waste,magdeck,m300,tips300)
-
-    # elute samples
+    # check magdeck height
     magdeck.disengage()
-    elute_samples(mag_samples_m,elution_samples_m,elution_buffer,magdeck,m300,tips300)
+    robot.pause(f"Is the magnet down?")
+    magdeck.engage(height_from_base=MAGNET_HEIGHT)
+    robot.pause(f"Is the magnet at the right height?")
+
+    # check top-left and bottom-right well of each labware with each pipette which uses them
+    pick_up(p1000, tips1000)
+    for position in [mag_samples_s[0], mag_samples_s[-1]]:
+        p1000.move_to(position.top())
+        robot.pause(f"Is it at the top of the well?")
+        p1000.aspirate(850, position.bottom(ASPIRATE_HEIGHT))
+        p1000.move_to(position.top())
+        robot.pause(f"Did it aspirate correctly?")
+        p1000.dispense(850, waste)
+        p1000.move_to(waste)
+        robot.pause(f"Did it dispense all the liquid?")
+    drop(p1000)
+    pick_up(m300, tips300)
+    # reservoir
+    m300.move_to(reagent_res.wells()[0].top())
+    robot.pause(f"Is it at the top of the well?")
+    m300.aspirate(200, reagent_res.wells()[0].bottom(2))
+    m300.move_to(reagent_res.wells()[0].top())
+    robot.pause(f"Did it aspirate correctly?")
+    m300.move_to(reagent_res.wells()[-8].top())
+    robot.pause(f"Is it at the top of the well?")
+    # deepwell
+    m300.move_to(mag_samples_m[0].top())
+    robot.pause(f"Is it at the top of the well?")
+    m300.dispense(200, mag_samples_m[0].bottom(5))
+    m300.move_to(mag_samples_m[0].top())
+    robot.pause(f"Did it dispense all the liquid?")
+    magdeck.engage(height_from_base=MAGNET_HEIGHT)
+    m300.aspirate(210, mag_samples_m[0].bottom(ASPIRATE_HEIGHT))
+    m300.move_to(mag_samples_m[0].top())
+    robot.pause(f"Did it aspirate correctly?")
+    m300.move_to(mag_samples_m[-1].top())
+    robot.pause(f"Is it at the top of the well?")
+    magdeck.disengage()
+    m300.dispense(210, mag_samples_m[-1].bottom(5))
+    m300.move_to(mag_samples_m[-1].top())
+    magdeck.engage(height_from_base=MAGNET_HEIGHT)
+    robot.pause(f"Did it dispense all the liquid?")
+    m300.aspirate(210, mag_samples_m[-1].bottom(ASPIRATE_HEIGHT))
+    m300.move_to(mag_samples_m[-1].top())
+    robot.pause(f"Did it aspirate correctly?")
+    # waste
+    m300.dispense(210, waste)
+    m300.move_to(waste)
+    robot.pause(f"Did it dispense all the liquid?")
+    drop(m300)
+    # check precission in deepwell
+    robot.pause(f"Is there any more than 5 microliters in any well?")
 
     # track final used tip
     save_tip_info()
-
-    magdeck.disengage()
-
-    finish_time = finish_run()
-
-    par = {
-        "NUM_SAMPLES" : NUM_SAMPLES,
-        "REAGENT_LABWARE" : REAGENT_LABWARE,
-        "MAGPLATE_LABWARE" : MAGPLATE_LABWARE,
-        "WASTE_LABWARE" : WASTE_LABWARE,
-        "ELUTION_LABWARE" : ELUTION_LABWARE,
-        "DISPENSE_BEADS" : DISPENSE_BEADS,
-        "LANGUAGE" : LANGUAGE,
-        "REUSE_TIPS" : REUSE_TIPS,
-        "RESET_TIPCOUNT" : RESET_TIPCOUNT
-    }
-
-    run_info(start_time, finish_time, par)
